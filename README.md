@@ -1,11 +1,12 @@
 # Instrukcje
 
-1. zainstalować git
-2. Zainstalować pnpm
-3. zainstalować node.js
-4. 'git clone https://github.com/MatiP911/Songmore'
-5. 'git checkout dev'
-6. 'pnpm run dev'
+1. zainstalować git (https://git-scm.com/downloads)
+1+. zainstalować git cli (https://cli.github.com/)
+2. Zainstalować pnpm (https://pnpm.io/installation)
+3. zainstalować node.js (https://nodejs.org/en)
+4. `git clone https://github.com/MatiP911/Songmore`
+5. `git checkout dev`
+6. `pnpm run dev`
 
 ---
 
