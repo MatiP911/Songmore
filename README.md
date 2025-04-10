@@ -7,7 +7,8 @@
 4. `git clone https://github.com/MatiP911/Songmore`
 5. `git checkout dev`
 6. `pnpm install`
-7. `pnpm run dev`
+7. `pnpm exec next telemetry disable`
+8. `pnpm run dev`
 
 ---
 
