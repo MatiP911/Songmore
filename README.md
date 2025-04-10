@@ -6,7 +6,8 @@
 3. zainstalować node.js (https://nodejs.org/en)
 4. `git clone https://github.com/MatiP911/Songmore`
 5. `git checkout dev`
-6. `pnpm run dev`
+6. `pnpm install`
+7. `pnpm run dev`
 
 ---
 
