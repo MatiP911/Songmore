@@ -7,8 +7,11 @@
 4. `git clone https://github.com/MatiP911/Songmore`
 5. `git checkout dev`
 6. `pnpm install`
-7. `pnpm exec next telemetry disable`
-8. `pnpm run dev`
+7. hmmm   
+trzeba stworzyć nowy plik `.env` i skopiować do niego zawartość `.env.example`   
+`cp .env.example .env` (nie testowałem)
+8. `pnpm exec next telemetry disable`
+9. `pnpm run dev`
 
 ---
 
