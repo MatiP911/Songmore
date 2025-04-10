@@ -1,3 +1,16 @@
+# Instrukcje
+
+1. zainstalować git
+2. Zainstalować pnpm
+3. zainstalować node.js
+4. 'git clone https://github.com/MatiP911/Songmore'
+5. 'git checkout dev'
+6. 'pnpm run dev'
+
+---
+
+To zostawiam bo może sie przyda
+
 # Create T3 App
 
 This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
