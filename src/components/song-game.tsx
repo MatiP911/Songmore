@@ -4,16 +4,6 @@ import { useState, useRef, useEffect } from "react"
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
 import { Progress } from "~/components/ui/progress"
-Expand
-song-game.tsx
-10 KB
-﻿
-"use client"
-
-import { useState, useRef, useEffect } from "react"
-import { Button } from "~/components/ui/button"
-import { Input } from "~/components/ui/input"
-import { Progress } from "~/components/ui/progress"
 import { Search, X, ArrowRight } from "lucide-react"
 
 // Sample song data - in a real app, this would come from an API
@@ -295,5 +285,3 @@ export default function SongGame() {
     </div>
   )
 }
-song-game.tsx
-10 KB
