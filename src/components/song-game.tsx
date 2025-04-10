@@ -4,6 +4,16 @@ import { useState, useRef, useEffect } from "react"
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
 import { Progress } from "~/components/ui/progress"
+Expand
+song-game.tsx
+10 KB
+﻿
+"use client"
+
+import { useState, useRef, useEffect } from "react"
+import { Button } from "~/components/ui/button"
+import { Input } from "~/components/ui/input"
+import { Progress } from "~/components/ui/progress"
 import { Search, X, ArrowRight } from "lucide-react"
 
 // Sample song data - in a real app, this would come from an API
@@ -28,6 +38,13 @@ const SAMPLE_SONGS = [
   },
 ]
 
+const emptySong = {
+  id: 0,
+  title: "EMPTY SONG",
+  artist: "NONE",
+  audioUrl: "",
+}
+
 type GuessResult = {
   guess: string
   artist?: string
@@ -44,36 +61,13 @@ export default function SongGame() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const maxGuesses = 6
   const maxStages = 6
   const stageDurations = [1, 2, 3, 4, 5, 10] // Duration in seconds for each stage
 
   useEffect(() => {
-    if (gameState === "playing" && audioRef.current) {
-      // Set up audio event listeners
-      const audio = audioRef.current
 
-      const updateTime = () => {
-        setCurrentTime(audio.currentTime)
-      }
-
-      const handleEnded = () => {
-        setIsPlaying(false)
-      }
-
-      audio.addEventListener("timeupdate", updateTime)
-      audio.addEventListener("ended", handleEnded)
-
-      // Set clip duration based on current stage
-      setDuration(stageDurations[currentStage - 1])
-
-      return () => {
-        audio.removeEventListener("timeupdate", updateTime)
-        audio.removeEventListener("ended", handleEnded)
-      }
-    }
   }, [gameState, currentStage])
 
   const startGame = () => {
@@ -85,29 +79,11 @@ export default function SongGame() {
   }
 
   const playCurrentClip = () => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0
-      audioRef.current
-        .play()
-        .then(() => {
-          setIsPlaying(true)
-          // Stop after the stage duration
-          setTimeout(
-            () => {
-              if (audioRef.current) {
-                audioRef.current.pause()
-                setIsPlaying(false)
-              }
-            },
-            stageDurations[currentStage - 1] * 1000,
-          )
-        })
-        .catch((e) => console.error("Audio playback failed:", e))
-    }
+
   }
 
   const submitGuess = () => {
-    const currentSongData = SAMPLE_SONGS[currentSong]
+    const currentSongData = SAMPLE_SONGS[currentSong] ?? emptySong
     const isCorrect =
       currentGuess.toLowerCase() === currentSongData.title.toLowerCase() ||
       currentGuess.toLowerCase().includes(currentSongData.title.toLowerCase())
@@ -193,13 +169,12 @@ export default function SongGame() {
               {guessResults.map((result, index) => (
                 <div
                   key={index}
-                  className={`w-full p-3 rounded flex items-center justify-between ${
-                    result.isSkipped
-                      ? "bg-gray-700 text-gray-300"
-                      : result.isCorrect
-                        ? "bg-red-600 text-white"
-                        : "bg-gray-700 text-gray-300"
-                  }`}
+                  className={`w-full p-3 rounded flex items-center justify-between ${result.isSkipped
+                    ? "bg-gray-700 text-gray-300"
+                    : result.isCorrect
+                      ? "bg-red-600 text-white"
+                      : "bg-gray-700 text-gray-300"
+                    }`}
                 >
                   {result.isSkipped ? (
                     <>
@@ -291,8 +266,7 @@ export default function SongGame() {
                 </Button>
               </div>
             </div>
-
-            <audio ref={audioRef} src={SAMPLE_SONGS[currentSong].audioUrl} className="hidden" />
+            {/* <audio ref={audioRef} src={SAMPLE_SONGS[currentSong].audioUrl} className="hidden" /> */}
           </div>
         )}
 
@@ -303,7 +277,7 @@ export default function SongGame() {
             <div className="p-6 bg-gray-800 rounded-lg">
               <p className="text-xl mb-2">The song was</p>
               <p className="text-2xl font-bold text-green-500">
-                {SAMPLE_SONGS[currentSong].title} - {SAMPLE_SONGS[currentSong].artist}
+                {/* {SAMPLE_SONGS[currentSong].title} - {SAMPLE_SONGS[currentSong].artist} */}
               </p>
             </div>
 
@@ -321,3 +295,5 @@ export default function SongGame() {
     </div>
   )
 }
+song-game.tsx
+10 KB
