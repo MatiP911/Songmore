@@ -6,33 +6,17 @@ import { Input } from "~/components/ui/input"
 import { Progress } from "~/components/ui/progress"
 import { Search, X, ArrowRight } from "lucide-react"
 
-// Sample song data - in a real app, this would come from an API
-const SAMPLE_SONGS = [
-  {
-    id: 1,
-    title: "Bohemian Rhapsody",
-    artist: "Queen",
-    audioUrl: "/sample-audio.mp3", // Placeholder
-  },
-  {
-    id: 2,
-    title: "Billie Jean",
-    artist: "Michael Jackson",
-    audioUrl: "/sample-audio.mp3", // Placeholder
-  },
-  {
-    id: 3,
-    title: "Smells Like Teen Spirit",
-    artist: "Nirvana",
-    audioUrl: "/sample-audio.mp3", // Placeholder
-  },
-]
 
 const emptySong = {
   id: 0,
   title: "EMPTY SONG",
   artist: "NONE",
   audioUrl: "",
+}
+
+type Song = {
+  title: string
+  artist: string
 }
 
 type GuessResult = {
@@ -44,10 +28,11 @@ type GuessResult = {
 
 export default function SongGame() {
   const [gameState, setGameState] = useState<"start" | "playing" | "result">("start")
-  const [currentSong, setCurrentSong] = useState(0)
   const [currentGuess, setCurrentGuess] = useState("")
   const [guessResults, setGuessResults] = useState<GuessResult[]>([])
   const [currentStage, setCurrentStage] = useState(1)
+
+  const [currentSong, setCurrentSong] = useState<Song>()
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -60,9 +45,11 @@ export default function SongGame() {
 
   }, [gameState, currentStage])
 
-  const startGame = () => {
+  const startGame = async () => {
     // Shuffle songs and start game
-    setCurrentSong(Math.floor(Math.random() * SAMPLE_SONGS.length))
+    const response = await fetch('api/random-song')
+    const data = await response.json()
+    setCurrentSong(data)
     setGameState("playing")
     setCurrentStage(1)
     setGuessResults([])
@@ -73,14 +60,19 @@ export default function SongGame() {
   }
 
   const submitGuess = () => {
-    const currentSongData = SAMPLE_SONGS[currentSong] ?? emptySong
+
+    if (!currentSong) {
+      console.error("submitGuess called but currentSong is not loaded yet.");
+      return
+    }
+
     const isCorrect =
-      currentGuess.toLowerCase() === currentSongData.title.toLowerCase() ||
-      currentGuess.toLowerCase().includes(currentSongData.title.toLowerCase())
+      currentGuess.toLowerCase() === currentSong.title.toLowerCase() ||
+      currentGuess.toLowerCase().includes(currentSong.title.toLowerCase())
 
     const newResult: GuessResult = {
-      guess: isCorrect ? currentSongData.title : currentGuess,
-      artist: isCorrect ? currentSongData.artist : undefined,
+      guess: isCorrect ? currentSong.title : currentGuess,
+      artist: isCorrect ? currentSong.artist : undefined,
       isCorrect,
       isSkipped: false,
     }
@@ -135,7 +127,7 @@ export default function SongGame() {
       <header className="w-full flex items-center justify-center py-4 border-b border-gray-800">
         <h1 className="text-3xl font-bold">
           <span className="text-white">Song</span>
-          <span className="text-gray-400">less</span>
+          <span className="text-gray-400">more</span>
         </h1>
       </header>
 
@@ -185,7 +177,7 @@ export default function SongGame() {
 
               {/* Empty slots for remaining guesses */}
               {emptySlots.map((_, index) => (
-                <div key={`empty-${index}`} className="w-full p-3 rounded bg-gray-800" />
+                <div key={`empty-${index}`} className="w-full p-5 rounded bg-gray-800" />
               ))}
             </div>
 
