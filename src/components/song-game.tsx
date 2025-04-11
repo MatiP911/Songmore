@@ -259,7 +259,7 @@ export default function SongGame() {
             <div className="p-6 bg-gray-800 rounded-lg">
               <p className="text-xl mb-2">The song was</p>
               <p className="text-2xl font-bold text-green-500">
-                {/* {SAMPLE_SONGS[currentSong].title} - {SAMPLE_SONGS[currentSong].artist} */}
+                {currentSong && `${currentSong.title} - ${currentSong.artist}`}
               </p>
             </div>
 
