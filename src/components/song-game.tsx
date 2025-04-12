@@ -153,7 +153,7 @@ export default function SongGame() {
       <header className="w-full flex items-center justify-center py-4 border-b border-gray-800">
         <h1 className="text-3xl font-bold">
           <span className="text-white">Song</span>
-          <span className="text-gray-400">more</span>
+          <span className="text-green-500">more</span>
         </h1>
       </header>
 
