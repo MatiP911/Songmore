@@ -17,6 +17,7 @@ const emptySong = {
 type Song = {
   title: string
   artist: string
+  preview: string
 }
 
 type GuessResult = {
@@ -32,10 +33,11 @@ export default function SongGame() {
   const [guessResults, setGuessResults] = useState<GuessResult[]>([])
   const [currentStage, setCurrentStage] = useState(1)
 
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null)
   const [currentSong, setCurrentSong] = useState<Song>()
   const [isPlaying, setIsPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [duration, setDuration] = useState(0)
+  // const [currentTime, setCurrentTime] = useState(0)
+  // const [duration, setDuration] = useState(0)
 
   const maxGuesses = 6
   const maxStages = 6
@@ -46,17 +48,28 @@ export default function SongGame() {
   }, [gameState, currentStage])
 
   const startGame = async () => {
-    // Shuffle songs and start game
+    // fetch song info
     const response = await fetch('api/random-song')
     const data = await response.json()
     setCurrentSong(data)
+    setCurrentAudio(new Audio(data.preview))
     setGameState("playing")
     setCurrentStage(1)
     setGuessResults([])
   }
 
   const playCurrentClip = () => {
-
+    if (!currentAudio) {
+      console.log("error playing song")
+    } else if (!isPlaying && currentAudio.paused) {
+      currentAudio.play().catch((error) => {
+        console.log(error)
+      })
+      setIsPlaying(true)
+    } else {
+      currentAudio.pause()
+      setIsPlaying(false)
+    }
   }
 
   const submitGuess = () => {
@@ -83,6 +96,8 @@ export default function SongGame() {
 
     if (isCorrect || updatedResults.length >= maxGuesses) {
       // Game over - either correct guess or out of guesses
+      currentAudio?.pause()
+      setIsPlaying(false)
       setGameState("result")
     } else {
       // Move to next stage
@@ -187,11 +202,11 @@ export default function SongGame() {
               <p className="text-sm text-gray-400">{stageDurations[currentStage - 1]} Seconds</p>
 
               <div className="w-full mt-2">
-                <Progress value={(currentTime / duration) * 100} className="h-2 bg-gray-700" />
+                {/* <Progress value={(currentTime / duration) * 100} className="h-2 bg-gray-700" />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
                   <span>0:00</span>
                   <span>0:{duration < 10 ? `0${duration}` : duration}</span>
-                </div>
+                </div> */}
               </div>
             </div>
 
@@ -248,7 +263,6 @@ export default function SongGame() {
                 </Button>
               </div>
             </div>
-            {/* <audio ref={audioRef} src={SAMPLE_SONGS[currentSong].audioUrl} className="hidden" /> */}
           </div>
         )}
 
