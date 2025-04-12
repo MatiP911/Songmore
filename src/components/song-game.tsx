@@ -36,7 +36,7 @@ export default function SongGame() {
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null)
   const [currentSong, setCurrentSong] = useState<Song>()
   const [isPlaying, setIsPlaying] = useState(false)
-  // const [currentTime, setCurrentTime] = useState(0)
+  const [currentTime, setCurrentTime] = useState(0)
   // const [duration, setDuration] = useState(0)
 
   const maxGuesses = 6
@@ -44,8 +44,12 @@ export default function SongGame() {
   const stageDurations = [1, 2, 3, 4, 5, 10] // Duration in seconds for each stage
 
   useEffect(() => {
-
-  }, [gameState, currentStage])
+    if (!currentAudio) return
+    const handleTimeUpdate = () => {
+      setCurrentTime(currentAudio.currentTime)
+    }
+    currentAudio.addEventListener('timeupdate', handleTimeUpdate)
+  }, [gameState, currentStage, currentAudio])
 
   const startGame = async () => {
     // fetch song info
@@ -71,6 +75,13 @@ export default function SongGame() {
       setIsPlaying(false)
     }
   }
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? `0${secs}` : secs}`;
+  };
+
 
   const submitGuess = () => {
 
@@ -202,11 +213,11 @@ export default function SongGame() {
               <p className="text-sm text-gray-400">{stageDurations[currentStage - 1]} Seconds</p>
 
               <div className="w-full mt-2">
-                {/* <Progress value={(currentTime / duration) * 100} className="h-2 bg-gray-700" />
+                <Progress value={(currentTime / 30) * 100} className="h-2 bg-gray-700" />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>0:00</span>
-                  <span>0:{duration < 10 ? `0${duration}` : duration}</span>
-                </div> */}
+                  <span>{formatTime(currentTime)}</span>
+                  <span>{"0:30"}</span>
+                </div>
               </div>
             </div>
 
