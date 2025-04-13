@@ -1,23 +1,69 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useImperativeHandle, forwardRef } from 'react';
 import { Progress } from "~/components/ui/progress"
 import { Button } from "~/components/ui/button"
 
-export interface AudioPlayerHandle {
-    play: () => void;
-    pause: () => void;
-    seekTo: (time: number) => void;
-    getInternalCurrentTime: () => number;
+export type Song = {
+    title: string
+    artist: string
+    preview: string
 }
 
-function AudioPlayer() {
+export interface AudioPlayerHandle {
+    getSong: () => Song | null;
+    setStage: (stage: number) => void
+    getTime: () => number | null;
+}
+
+const AudioPlayer = forwardRef<AudioPlayerHandle, {}>((_props, ref) => {
     const [currentTime, setCurrentTime] = useState(0);
     const [currentVolume, setCurrentVolume] = useState(0.02);
+
+    const [currentSong, setCurrentSong] = useState<Song | null>(null);
     const [currentStage, setCurrentStage] = useState(1);
     const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null)
     const stageDurations = [1, 2, 3, 5, 15, 30]
 
+    useImperativeHandle(ref, () => ({
+        setStage: (stage: number) => {
+            setCurrentStage(stage);
+        },
+        getTime: () => { return currentAudio?.currentTime ?? null },
+        getSong: () => currentSong
+    }));
+
     useEffect(() => {
-        if (!currentAudio) return;
+        const getData = async () => {
+            try {
+                const response = await fetch("/api/random-song");
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                if (data) {
+                    // Create a new Audio object with the URL
+                    const audio = new Audio(data.preview);
+                    audio.volume = currentVolume; // Set initial volume
+                    setCurrentAudio(audio); // Store the Audio object
+                    setCurrentSong(data)
+                } else {
+                    console.error("Invalid data format from API:", data);
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+        getData();
+        return () => {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.src = ""; // Clear the source
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!currentAudio) return
 
         const handleTimeUpdate = () => {
             setCurrentTime(currentAudio.currentTime);
@@ -47,17 +93,10 @@ function AudioPlayer() {
         }
     }, [currentAudio, currentVolume]); // Only depends on audio and volume state
 
-    // Effect 3: Seek audio position if the currentTime state changes externally
-    // (e.g., user clicks a progress bar)
     useEffect(() => {
         if (!currentAudio) return;
-
-        // Only seek if the state `currentTime` is significantly different
-        // from the actual `currentAudio.currentTime`. This prevents fighting
-        // with the timeupdate listener. Adjust the threshold (e.g., 1 second) as needed.
         const timeDifference = Math.abs(currentAudio.currentTime - currentTime);
 
-        // Check if the audio is ready and the difference is significant enough to warrant a seek
         if (currentAudio.readyState > 0 && timeDifference > 1) {
             console.log(`Seeking audio to: ${currentTime}`);
             currentAudio.currentTime = currentTime;
@@ -126,6 +165,6 @@ function AudioPlayer() {
 
         </div>
     );
-}
+});
 
 export { AudioPlayer }

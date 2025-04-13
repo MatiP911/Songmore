@@ -7,19 +7,6 @@ import { Search, X, ArrowRight } from "lucide-react"
 import { AudioPlayer, type AudioPlayerHandle } from '~/components/audioPlayer'
 
 
-const emptySong = {
-  id: 0,
-  title: "EMPTY SONG",
-  artist: "NONE",
-  audioUrl: "",
-}
-
-type Song = {
-  title: string
-  artist: string
-  preview: string
-}
-
 type GuessResult = {
   guess: string
   artist?: string
@@ -34,7 +21,6 @@ export default function SongGame() {
   const [currentStage, setCurrentStage] = useState(1)
 
   const audioRef = useRef<AudioPlayerHandle | null>(null);
-  const [currentSong, setCurrentSong] = useState<Song>()
 
 
   const maxGuesses = 6
@@ -42,9 +28,6 @@ export default function SongGame() {
 
   const startGame = async () => {
     // fetch song info
-    const response = await fetch('api/random-song')
-    const data = await response.json()
-    setCurrentSong(data)
     setGameState("playing")
     setCurrentStage(1)
     setGuessResults([])
@@ -52,8 +35,14 @@ export default function SongGame() {
 
   const submitGuess = () => {
 
-    if (!currentSong) {
+    if (!useRef) {
       console.error("submitGuess called but currentSong is not loaded yet.");
+      return
+    }
+
+    const currentSong = audioRef.current?.getSong()
+    if (!currentSong) {
+      console.log("song not set")
       return
     }
 
@@ -78,6 +67,7 @@ export default function SongGame() {
     } else {
       // Move to next stage
       setCurrentStage((prev) => Math.min(prev + 1, maxStages))
+      audioRef.current?.setStage(currentStage)
     }
   }
 
@@ -98,13 +88,13 @@ export default function SongGame() {
     } else {
       // Move to next stage
       setCurrentStage((prev) => Math.min(prev + 1, maxStages))
+      audioRef.current?.setStage(currentStage)
     }
   }
 
   const resetGame = () => {
     setGameState("start")
     setCurrentGuess("")
-    audioRef.current?.seekTo(0)
     setGuessResults([])
     setCurrentStage(1)
   }
@@ -215,7 +205,7 @@ export default function SongGame() {
             <div className="p-6 bg-gray-800 rounded-lg">
               <p className="text-xl mb-2">The song was</p>
               <p className="text-2xl font-bold text-green-500">
-                {currentSong && `${currentSong.title} - ${currentSong.artist}`}
+                {`${audioRef.current?.getSong()?.title} - ${audioRef.current?.getSong()?.artist}`}
               </p>
             </div>
 
