@@ -3,8 +3,8 @@
 import { useState, useRef, useEffect } from "react"
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
-import { Progress } from "~/components/ui/progress"
 import { Search, X, ArrowRight } from "lucide-react"
+import { AudioPlayer, type AudioPlayerHandle } from '~/components/audioPlayer'
 
 
 const emptySong = {
@@ -33,55 +33,22 @@ export default function SongGame() {
   const [guessResults, setGuessResults] = useState<GuessResult[]>([])
   const [currentStage, setCurrentStage] = useState(1)
 
-  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null)
+  const audioRef = useRef<AudioPlayerHandle | null>(null);
   const [currentSong, setCurrentSong] = useState<Song>()
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  // const [duration, setDuration] = useState(0)
+
 
   const maxGuesses = 6
   const maxStages = 6
-  const stageDurations = [1, 2, 3, 4, 5, 10] // Duration in seconds for each stage
-
-  useEffect(() => {
-    if (!currentAudio) return
-    const handleTimeUpdate = () => {
-      setCurrentTime(currentAudio.currentTime)
-    }
-    currentAudio.addEventListener('timeupdate', handleTimeUpdate)
-  }, [gameState, currentStage, currentAudio])
 
   const startGame = async () => {
     // fetch song info
     const response = await fetch('api/random-song')
     const data = await response.json()
     setCurrentSong(data)
-    setCurrentAudio(new Audio(data.preview))
     setGameState("playing")
     setCurrentStage(1)
     setGuessResults([])
   }
-
-  const playCurrentClip = () => {
-    if (!currentAudio) {
-      console.log("error playing song")
-    } else if (!isPlaying && currentAudio.paused) {
-      currentAudio.play().catch((error) => {
-        console.log(error)
-      })
-      setIsPlaying(true)
-    } else {
-      currentAudio.pause()
-      setIsPlaying(false)
-    }
-  }
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs < 10 ? `0${secs}` : secs}`;
-  };
-
 
   const submitGuess = () => {
 
@@ -107,8 +74,6 @@ export default function SongGame() {
 
     if (isCorrect || updatedResults.length >= maxGuesses) {
       // Game over - either correct guess or out of guesses
-      currentAudio?.pause()
-      setIsPlaying(false)
       setGameState("result")
     } else {
       // Move to next stage
@@ -139,9 +104,9 @@ export default function SongGame() {
   const resetGame = () => {
     setGameState("start")
     setCurrentGuess("")
+    audioRef.current?.seekTo(0)
     setGuessResults([])
     setCurrentStage(1)
-    setIsPlaying(false)
   }
 
   const remainingGuesses = maxGuesses - guessResults.length
@@ -207,42 +172,8 @@ export default function SongGame() {
               ))}
             </div>
 
-            {/* Current Stage Info */}
-            <div className="w-full text-center space-y-1">
-              <h3 className="text-green-500 font-medium">Stage {currentStage}</h3>
-              <p className="text-sm text-gray-400">{stageDurations[currentStage - 1]} Seconds</p>
-
-              <div className="w-full mt-2">
-                <Progress value={(currentTime / 30) * 100} className="h-2 bg-gray-700" />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>{formatTime(currentTime)}</span>
-                  <span>{"0:30"}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Play Button */}
-            <div className="flex justify-center my-4">
-              <Button
-                onClick={playCurrentClip}
-                disabled={isPlaying}
-                className="rounded-full h-14 w-14 bg-green-600 hover:bg-green-700 p-0 flex items-center justify-center"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polygon points="5 3 19 12 5 21 5 3" fill="white" />
-                </svg>
-              </Button>
-            </div>
+            {/*Audio component*/}
+            <AudioPlayer></AudioPlayer>
 
             {/* Guess Input */}
             <div className="w-full space-y-4">
