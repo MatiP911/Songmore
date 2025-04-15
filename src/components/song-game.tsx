@@ -17,18 +17,15 @@ export default function SongGame() {
   const [gameState, setGameState] = useState<"start" | "playing" | "result">("start")
   const [currentGuess, setCurrentGuess] = useState("")
   const [guessResults, setGuessResults] = useState<GuessResult[]>([])
-  const [currentStage, setCurrentStage] = useState(1)
   const [currentSong, setSongTitle] = useState("")
   const [currentSongArtist, setSongArtist] = useState("")
 
   const audioRef = useRef<AudioPlayerHandle | null>(null);
 
-  const maxGuesses = 6
-  const maxStages = 6
+  const nrOfStages = 6
 
   const startGame = async () => {
     setGameState("playing")
-    setCurrentStage(1)
     setGuessResults([])
   }
 
@@ -40,8 +37,12 @@ export default function SongGame() {
     }
 
     if (currentSong === "") {
+      console.log("current song is empty")
       setSongTitle(audioRef.current.getSong())
       setSongArtist(audioRef.current.getArtist())
+      if (currentSong === "") {
+        console.error("failed to load song info")
+      }
     }
 
     const isCorrect =
@@ -49,8 +50,8 @@ export default function SongGame() {
       currentGuess.toLowerCase().includes(currentSong.toLowerCase())
 
     const newResult: GuessResult = {
-      guess: isCorrect ? currentSong : currentGuess,
-      isCorrect,
+      guess: currentGuess,
+      isCorrect: isCorrect,
       isSkipped: false,
     }
 
@@ -58,17 +59,22 @@ export default function SongGame() {
     setGuessResults(updatedResults)
     setCurrentGuess("")
 
-    if (isCorrect || updatedResults.length >= maxGuesses) {
+    if (isCorrect || updatedResults.length >= nrOfStages) {
       // Game over - either correct guess or out of guesses
       setGameState("result")
     } else {
       // Move to next stage
-      setCurrentStage((prev) => Math.min(prev + 1, maxStages))
-      audioRef.current?.setStage(currentStage)
+      audioRef.current.nextStage()
     }
   }
 
   const skipGuess = () => {
+
+    if (!audioRef.current) {
+      console.error("audio Ref")
+      return
+    }
+
     const newResult: GuessResult = {
       guess: "",
       isCorrect: false,
@@ -79,13 +85,12 @@ export default function SongGame() {
     setGuessResults(updatedResults)
     setCurrentGuess("")
 
-    if (updatedResults.length >= maxGuesses) {
+    if (updatedResults.length >= nrOfStages) {
       // Game over - out of guesses
       setGameState("result")
     } else {
       // Move to next stage
-      setCurrentStage((prev) => Math.min(prev + 1, maxStages))
-      audioRef.current?.setStage(currentStage)
+      audioRef.current.nextStage()
     }
   }
 
@@ -93,10 +98,9 @@ export default function SongGame() {
     setGameState("start")
     setCurrentGuess("")
     setGuessResults([])
-    setCurrentStage(1)
   }
 
-  const remainingGuesses = maxGuesses - guessResults.length
+  const remainingGuesses = nrOfStages - guessResults.length
   const emptySlots = Array(remainingGuesses).fill(null)
 
   return (
@@ -159,7 +163,11 @@ export default function SongGame() {
             </div>
 
             {/*Audio component*/}
-            <AudioPlayer ref={audioRef}></AudioPlayer>
+            <AudioPlayer ref={audioRef}
+              onSongLoaded={(title, artist) => {
+                setSongTitle(title)
+                setSongArtist(artist)
+              }} />
 
             {/* Guess Input */}
             <div className="w-full space-y-4">

@@ -2,35 +2,35 @@ import React, { useEffect, useState, useRef, useImperativeHandle, forwardRef } f
 import { Progress } from "~/components/ui/progress"
 import { Button } from "~/components/ui/button"
 
-export type Song = {
-    title: string
-    artist: string
-    preview: string
-}
+const nrOfStages = 6
 
 export interface AudioPlayerHandle {
     getSong: () => string;
     getArtist: () => string;
-    setStage: (stage: number) => void
+    setStage: (stage: number) => void;
+    nextStage: () => void;
     getTime: () => number | null;
 }
 
-const AudioPlayer = forwardRef<AudioPlayerHandle, {}>((_props, ref) => {
+const AudioPlayer = forwardRef<AudioPlayerHandle, { onSongLoaded?: (title: string, artist: string) => void }>((_props, ref) => {
     const [currentTime, setCurrentTime] = useState(0);
     const [currentVolume, setCurrentVolume] = useState(0.02);
 
-    const [currentSong, setCurrentSong] = useState<Song | null>(null);
+    const [currentSong, setSongTitle] = useState("")
+    const [currentSongArtist, setSongArtist] = useState("")
+
     const [currentStage, setCurrentStage] = useState(1);
     const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null)
-    const stageDurations = [1, 2, 3, 5, 15, 30]
+    const stageDurations = [0.5, 2, 3, 5, 15, 30]
 
     useImperativeHandle(ref, () => ({
         setStage: (stage: number) => {
             setCurrentStage(stage);
         },
+        nextStage: () => { setCurrentStage((prev) => Math.min(prev + 1, nrOfStages)) },
         getTime: () => { return currentAudio?.currentTime ?? null },
-        getSong: () => { return currentSong?.title ?? "" },
-        getArtist: () => { return currentSong?.artist ?? "" }
+        getSong: () => { return currentSong },
+        getArtist: () => { return currentSongArtist }
     }));
 
     useEffect(() => {
@@ -43,11 +43,14 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, {}>((_props, ref) => {
                 const data = await response.json();
 
                 if (data) {
-                    // Create a new Audio object with the URL
                     const audio = new Audio(data.preview);
-                    audio.volume = currentVolume; // Set initial volume
-                    setCurrentAudio(audio); // Store the Audio object
-                    setCurrentSong(data)
+                    audio.volume = currentVolume;   // Set initial volume
+                    setCurrentAudio(audio);         // Store the Audio object
+                    setSongTitle(data.title)
+                    setSongArtist(data.artist)
+                    if (_props.onSongLoaded) {
+                        _props.onSongLoaded(data.title, data.artist)
+                    }
                 } else {
                     console.error("Invalid data format from API:", data);
                 }
@@ -59,7 +62,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, {}>((_props, ref) => {
         return () => {
             if (currentAudio) {
                 currentAudio.pause();
-                currentAudio.src = ""; // Clear the source
+                currentAudio.src = "";
             }
         };
     }, []);
@@ -68,8 +71,8 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, {}>((_props, ref) => {
         if (!currentAudio) return
 
         const handleTimeUpdate = () => {
-            setCurrentTime(currentAudio.currentTime);
             const currentStageDuration = stageDurations[currentStage - 1];
+            setCurrentTime(currentAudio.currentTime)
             if (
                 currentStageDuration !== undefined &&
                 currentAudio.currentTime >= currentStageDuration
@@ -81,7 +84,6 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, {}>((_props, ref) => {
 
         currentAudio.addEventListener('timeupdate', handleTimeUpdate);
 
-        // Cleanup: Remove the event listener when component unmounts or dependencies change
         return () => {
             currentAudio.removeEventListener('timeupdate', handleTimeUpdate);
         };
@@ -95,26 +97,11 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, {}>((_props, ref) => {
         }
     }, [currentAudio, currentVolume]); // Only depends on audio and volume state
 
-    useEffect(() => {
-        if (!currentAudio) return;
-        const timeDifference = Math.abs(currentAudio.currentTime - currentTime);
-
-        if (currentAudio.readyState > 0 && timeDifference > 1) {
-            console.log(`Seeking audio to: ${currentTime}`);
-            currentAudio.currentTime = currentTime;
-        }
-    }, [currentAudio, currentTime]); // Only depends on audio and the time state intended for seeking
-
-    // Note: The original effect included `gameState`. If `gameState` should control
-    // whether listeners are active or how seeking/volume works, you'll need to
-    // incorporate that logic into the relevant useEffect hooks (e.g., add conditions
-    // based on gameState or include it in dependency arrays if the effect logic depends on it).
-
     const playCurrentClip = () => {
         if (!currentAudio) {
             console.log("error playing song")
         } else if (currentAudio.paused) {
-            setCurrentTime(0)
+            currentAudio.currentTime = 0
             currentAudio.play().catch((error) => {
                 console.log(error)
             })
