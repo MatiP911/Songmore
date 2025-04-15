@@ -1,3 +1,5 @@
+# https://songmore.netlify.app/
+
 # Instrukcje
 
 1. zainstalować git (https://git-scm.com/downloads)
