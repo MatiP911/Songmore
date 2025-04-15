@@ -9,7 +9,6 @@ import { AudioPlayer, type AudioPlayerHandle } from '~/components/audioPlayer'
 
 type GuessResult = {
   guess: string
-  artist?: string
   isCorrect: boolean
   isSkipped: boolean
 }
@@ -19,15 +18,15 @@ export default function SongGame() {
   const [currentGuess, setCurrentGuess] = useState("")
   const [guessResults, setGuessResults] = useState<GuessResult[]>([])
   const [currentStage, setCurrentStage] = useState(1)
+  const [currentSong, setSongTitle] = useState("")
+  const [currentSongArtist, setSongArtist] = useState("")
 
   const audioRef = useRef<AudioPlayerHandle | null>(null);
-
 
   const maxGuesses = 6
   const maxStages = 6
 
   const startGame = async () => {
-    // fetch song info
     setGameState("playing")
     setCurrentStage(1)
     setGuessResults([])
@@ -35,24 +34,22 @@ export default function SongGame() {
 
   const submitGuess = () => {
 
-    if (!useRef) {
-      console.error("submitGuess called but currentSong is not loaded yet.");
+    if (!audioRef.current) {
+      console.error("audio Ref")
       return
     }
 
-    const currentSong = audioRef.current?.getSong()
-    if (!currentSong) {
-      console.log("song not set")
-      return
+    if (currentSong === "") {
+      setSongTitle(audioRef.current.getSong())
+      setSongArtist(audioRef.current.getArtist())
     }
 
     const isCorrect =
-      currentGuess.toLowerCase() === currentSong.title.toLowerCase() ||
-      currentGuess.toLowerCase().includes(currentSong.title.toLowerCase())
+      currentGuess.toLowerCase() === currentSong.toLowerCase() ||
+      currentGuess.toLowerCase().includes(currentSong.toLowerCase())
 
     const newResult: GuessResult = {
-      guess: isCorrect ? currentSong.title : currentGuess,
-      artist: isCorrect ? currentSong.artist : undefined,
+      guess: isCorrect ? currentSong : currentGuess,
       isCorrect,
       isSkipped: false,
     }
@@ -149,7 +146,6 @@ export default function SongGame() {
                       {result.isCorrect && <X className="h-4 w-4" />}
                       <span className="mx-auto">
                         {result.guess}
-                        {result.artist ? ` - ${result.artist}` : ""}
                       </span>
                     </>
                   )}
@@ -163,7 +159,7 @@ export default function SongGame() {
             </div>
 
             {/*Audio component*/}
-            <AudioPlayer></AudioPlayer>
+            <AudioPlayer ref={audioRef}></AudioPlayer>
 
             {/* Guess Input */}
             <div className="w-full space-y-4">
@@ -205,7 +201,7 @@ export default function SongGame() {
             <div className="p-6 bg-gray-800 rounded-lg">
               <p className="text-xl mb-2">The song was</p>
               <p className="text-2xl font-bold text-green-500">
-                {`${audioRef.current?.getSong()?.title} - ${audioRef.current?.getSong()?.artist}`}
+                {`${currentSong} - ${currentSongArtist}`}
               </p>
             </div>
 

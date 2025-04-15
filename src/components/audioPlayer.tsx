@@ -9,7 +9,8 @@ export type Song = {
 }
 
 export interface AudioPlayerHandle {
-    getSong: () => Song | null;
+    getSong: () => string;
+    getArtist: () => string;
     setStage: (stage: number) => void
     getTime: () => number | null;
 }
@@ -28,7 +29,8 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, {}>((_props, ref) => {
             setCurrentStage(stage);
         },
         getTime: () => { return currentAudio?.currentTime ?? null },
-        getSong: () => currentSong
+        getSong: () => { return currentSong?.title ?? "" },
+        getArtist: () => { return currentSong?.artist ?? "" }
     }));
 
     useEffect(() => {
