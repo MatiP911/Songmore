@@ -3,85 +3,55 @@
 import { useState, useRef, useEffect } from "react"
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
-import { Progress } from "~/components/ui/progress"
 import { Search, X, ArrowRight } from "lucide-react"
+import { AudioPlayer, type AudioPlayerHandle } from '~/components/audioPlayer'
 
-// Sample song data - in a real app, this would come from an API
-const SAMPLE_SONGS = [
-  {
-    id: 1,
-    title: "Bohemian Rhapsody",
-    artist: "Queen",
-    audioUrl: "/sample-audio.mp3", // Placeholder
-  },
-  {
-    id: 2,
-    title: "Billie Jean",
-    artist: "Michael Jackson",
-    audioUrl: "/sample-audio.mp3", // Placeholder
-  },
-  {
-    id: 3,
-    title: "Smells Like Teen Spirit",
-    artist: "Nirvana",
-    audioUrl: "/sample-audio.mp3", // Placeholder
-  },
-]
-
-const emptySong = {
-  id: 0,
-  title: "EMPTY SONG",
-  artist: "NONE",
-  audioUrl: "",
-}
 
 type GuessResult = {
   guess: string
-  artist?: string
   isCorrect: boolean
   isSkipped: boolean
 }
 
 export default function SongGame() {
   const [gameState, setGameState] = useState<"start" | "playing" | "result">("start")
-  const [currentSong, setCurrentSong] = useState(0)
   const [currentGuess, setCurrentGuess] = useState("")
   const [guessResults, setGuessResults] = useState<GuessResult[]>([])
-  const [currentStage, setCurrentStage] = useState(1)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [duration, setDuration] = useState(0)
+  const [currentSong, setSongTitle] = useState("")
+  const [currentSongArtist, setSongArtist] = useState("")
 
-  const maxGuesses = 6
-  const maxStages = 6
-  const stageDurations = [1, 2, 3, 4, 5, 10] // Duration in seconds for each stage
+  const audioRef = useRef<AudioPlayerHandle | null>(null);
 
-  useEffect(() => {
+  const nrOfStages = 6
 
-  }, [gameState, currentStage])
-
-  const startGame = () => {
-    // Shuffle songs and start game
-    setCurrentSong(Math.floor(Math.random() * SAMPLE_SONGS.length))
+  const startGame = async () => {
     setGameState("playing")
-    setCurrentStage(1)
     setGuessResults([])
   }
 
-  const playCurrentClip = () => {
-
-  }
-
   const submitGuess = () => {
-    const currentSongData = SAMPLE_SONGS[currentSong] ?? emptySong
+
+    if (!audioRef.current) {
+      console.error("audio Ref")
+      return
+    }
+
+    if (currentSong === "") {
+      console.log("current song is empty")
+      setSongTitle(audioRef.current.getSong())
+      setSongArtist(audioRef.current.getArtist())
+      if (currentSong === "") {
+        console.error("failed to load song info")
+      }
+    }
+
     const isCorrect =
-      currentGuess.toLowerCase() === currentSongData.title.toLowerCase() ||
-      currentGuess.toLowerCase().includes(currentSongData.title.toLowerCase())
+      currentGuess.toLowerCase() === currentSong.toLowerCase() ||
+      currentGuess.toLowerCase().includes(currentSong.toLowerCase())
 
     const newResult: GuessResult = {
-      guess: isCorrect ? currentSongData.title : currentGuess,
-      artist: isCorrect ? currentSongData.artist : undefined,
-      isCorrect,
+      guess: currentGuess,
+      isCorrect: isCorrect,
       isSkipped: false,
     }
 
@@ -89,16 +59,22 @@ export default function SongGame() {
     setGuessResults(updatedResults)
     setCurrentGuess("")
 
-    if (isCorrect || updatedResults.length >= maxGuesses) {
+    if (isCorrect || updatedResults.length >= nrOfStages) {
       // Game over - either correct guess or out of guesses
       setGameState("result")
     } else {
       // Move to next stage
-      setCurrentStage((prev) => Math.min(prev + 1, maxStages))
+      audioRef.current.nextStage()
     }
   }
 
   const skipGuess = () => {
+
+    if (!audioRef.current) {
+      console.error("audio Ref")
+      return
+    }
+
     const newResult: GuessResult = {
       guess: "",
       isCorrect: false,
@@ -109,12 +85,12 @@ export default function SongGame() {
     setGuessResults(updatedResults)
     setCurrentGuess("")
 
-    if (updatedResults.length >= maxGuesses) {
+    if (updatedResults.length >= nrOfStages) {
       // Game over - out of guesses
       setGameState("result")
     } else {
       // Move to next stage
-      setCurrentStage((prev) => Math.min(prev + 1, maxStages))
+      audioRef.current.nextStage()
     }
   }
 
@@ -122,11 +98,9 @@ export default function SongGame() {
     setGameState("start")
     setCurrentGuess("")
     setGuessResults([])
-    setCurrentStage(1)
-    setIsPlaying(false)
   }
 
-  const remainingGuesses = maxGuesses - guessResults.length
+  const remainingGuesses = nrOfStages - guessResults.length
   const emptySlots = Array(remainingGuesses).fill(null)
 
   return (
@@ -135,7 +109,7 @@ export default function SongGame() {
       <header className="w-full flex items-center justify-center py-4 border-b border-gray-800">
         <h1 className="text-3xl font-bold">
           <span className="text-white">Song</span>
-          <span className="text-gray-400">less</span>
+          <span className="text-green-500">more</span>
         </h1>
       </header>
 
@@ -176,7 +150,6 @@ export default function SongGame() {
                       {result.isCorrect && <X className="h-4 w-4" />}
                       <span className="mx-auto">
                         {result.guess}
-                        {result.artist ? ` - ${result.artist}` : ""}
                       </span>
                     </>
                   )}
@@ -185,46 +158,16 @@ export default function SongGame() {
 
               {/* Empty slots for remaining guesses */}
               {emptySlots.map((_, index) => (
-                <div key={`empty-${index}`} className="w-full p-3 rounded bg-gray-800" />
+                <div key={`empty-${index}`} className="w-full p-5 rounded bg-gray-800" />
               ))}
             </div>
 
-            {/* Current Stage Info */}
-            <div className="w-full text-center space-y-1">
-              <h3 className="text-green-500 font-medium">Stage {currentStage}</h3>
-              <p className="text-sm text-gray-400">{stageDurations[currentStage - 1]} Seconds</p>
-
-              <div className="w-full mt-2">
-                <Progress value={(currentTime / duration) * 100} className="h-2 bg-gray-700" />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>0:00</span>
-                  <span>0:{duration < 10 ? `0${duration}` : duration}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Play Button */}
-            <div className="flex justify-center my-4">
-              <Button
-                onClick={playCurrentClip}
-                disabled={isPlaying}
-                className="rounded-full h-14 w-14 bg-green-600 hover:bg-green-700 p-0 flex items-center justify-center"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polygon points="5 3 19 12 5 21 5 3" fill="white" />
-                </svg>
-              </Button>
-            </div>
+            {/*Audio component*/}
+            <AudioPlayer ref={audioRef}
+              onSongLoaded={(title, artist) => {
+                setSongTitle(title)
+                setSongArtist(artist)
+              }} />
 
             {/* Guess Input */}
             <div className="w-full space-y-4">
@@ -256,7 +199,6 @@ export default function SongGame() {
                 </Button>
               </div>
             </div>
-            {/* <audio ref={audioRef} src={SAMPLE_SONGS[currentSong].audioUrl} className="hidden" /> */}
           </div>
         )}
 
@@ -267,7 +209,7 @@ export default function SongGame() {
             <div className="p-6 bg-gray-800 rounded-lg">
               <p className="text-xl mb-2">The song was</p>
               <p className="text-2xl font-bold text-green-500">
-                {/* {SAMPLE_SONGS[currentSong].title} - {SAMPLE_SONGS[currentSong].artist} */}
+                {`${currentSong} - ${currentSongArtist}`}
               </p>
             </div>
 
