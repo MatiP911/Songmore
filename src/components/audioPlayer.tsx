@@ -1,8 +1,14 @@
-import React, { useEffect, useState, useRef, useImperativeHandle, forwardRef } from 'react';
-import { Progress } from "~/components/ui/progress"
-import { Button } from "~/components/ui/button"
+import React, {
+    forwardRef,
+    useEffect,
+    useImperativeHandle,
+    useRef,
+    useState,
+} from "react";
+import { Progress } from "./ui/progress.tsx";
+import { Button } from "./ui/button.tsx";
 
-const nrOfStages = 6
+const nrOfStages = 6;
 
 export interface AudioPlayerHandle {
     getSong: () => string;
@@ -12,25 +18,40 @@ export interface AudioPlayerHandle {
     getTime: () => number | null;
 }
 
-const AudioPlayer = forwardRef<AudioPlayerHandle, { onSongLoaded?: (title: string, artist: string) => void }>((_props, ref) => {
+const AudioPlayer = forwardRef<
+    AudioPlayerHandle,
+    { onSongLoaded?: (title: string, artist: string) => void }
+>((_props, ref) => {
     const [currentTime, setCurrentTime] = useState(0);
-    const [currentVolume, setCurrentVolume] = useState(0.02);
+    // const [currentVolume, setCurrentVolume] = useState(0.02);
 
-    const [currentSong, setSongTitle] = useState("")
-    const [currentSongArtist, setSongArtist] = useState("")
+    const [currentSong, setSongTitle] = useState("");
+    const [currentSongArtist, setSongArtist] = useState("");
 
     const [currentStage, setCurrentStage] = useState(1);
-    const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null)
-    const stageDurations = [0.5, 2, 3, 5, 15, 30]
+    const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(
+        null,
+    );
+    const stageDurations = [0.5, 2, 3, 5, 15, 30];
+
+    const [currentVolume, setCurrentVolume] = useState(0.02);
 
     useImperativeHandle(ref, () => ({
         setStage: (stage: number) => {
             setCurrentStage(stage);
         },
-        nextStage: () => { setCurrentStage((prev) => Math.min(prev + 1, nrOfStages)) },
-        getTime: () => { return currentAudio?.currentTime ?? null },
-        getSong: () => { return currentSong },
-        getArtist: () => { return currentSongArtist }
+        nextStage: () => {
+            setCurrentStage((prev) => Math.min(prev + 1, nrOfStages));
+        },
+        getTime: () => {
+            return currentAudio?.currentTime ?? null;
+        },
+        getSong: () => {
+            return currentSong;
+        },
+        getArtist: () => {
+            return currentSongArtist;
+        },
     }));
 
     useEffect(() => {
@@ -44,14 +65,14 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, { onSongLoaded?: (title: strin
 
                 if (data) {
                     const audio = new Audio(data.preview);
-                    audio.volume = currentVolume;   // Set initial volume
-                    setCurrentAudio(audio);         // Store the Audio object
-                    setSongTitle(data.title)
-                    setSongArtist(data.artist)
+                    audio.volume = currentVolume; // Set initial volume
+                    setCurrentAudio(audio); // Store the Audio object
+                    setSongTitle(data.title);
+                    setSongArtist(data.artist);
                     if (_props.onSongLoaded) {
-                        _props.onSongLoaded(data.title, data.artist)
+                        _props.onSongLoaded(data.title, data.artist);
                     }
-                } else {
+                } else  {
                     console.error("Invalid data format from API:", data);
                 }
             } catch (error) {
@@ -68,11 +89,11 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, { onSongLoaded?: (title: strin
     }, []);
 
     useEffect(() => {
-        if (!currentAudio) return
+        if (!currentAudio) return;
 
         const handleTimeUpdate = () => {
             const currentStageDuration = stageDurations[currentStage - 1];
-            setCurrentTime(currentAudio.currentTime)
+            setCurrentTime(currentAudio.currentTime);
             if (
                 currentStageDuration !== undefined &&
                 currentAudio.currentTime >= currentStageDuration
@@ -82,10 +103,10 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, { onSongLoaded?: (title: strin
             }
         };
 
-        currentAudio.addEventListener('timeupdate', handleTimeUpdate);
+        currentAudio.addEventListener("timeupdate", handleTimeUpdate);
 
         return () => {
-            currentAudio.removeEventListener('timeupdate', handleTimeUpdate);
+            currentAudio.removeEventListener("timeupdate", handleTimeUpdate);
         };
     }, [currentAudio, currentStage, stageDurations, setCurrentTime]); // Dependencies for this effect
 
@@ -99,16 +120,16 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, { onSongLoaded?: (title: strin
 
     const playCurrentClip = () => {
         if (!currentAudio) {
-            console.log("error playing song")
+            console.log("error playing song");
         } else if (currentAudio.paused) {
-            currentAudio.currentTime = 0
+            currentAudio.currentTime = 0;
             currentAudio.play().catch((error) => {
-                console.log(error)
-            })
+                console.log(error);
+            });
         } else {
-            currentAudio.pause()
+            currentAudio.pause();
         }
-    }
+    };
 
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
@@ -119,11 +140,18 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, { onSongLoaded?: (title: strin
     return (
         <div>
             <div className="w-full text-center space-y-1">
-                <h3 className="text-green-500 font-medium">Stage {currentStage}</h3>
-                <p className="text-sm text-gray-400">{stageDurations[currentStage - 1]} Seconds</p>
+                <h3 className="text-green-500 font-medium">
+                    Stage {currentStage}
+                </h3>
+                <p className="text-sm text-gray-400">
+                    {stageDurations[currentStage - 1]} Seconds
+                </p>
 
                 <div className="w-full mt-2">
-                    <Progress value={(currentTime / 30) * 100} className="h-2 bg-gray-700" />
+                    <Progress
+                        value={(currentTime / 30) * 100}
+                        className="h-2 bg-gray-700"
+                    />
                     <div className="flex justify-between text-xs text-gray-500 mt-1">
                         <span>{formatTime(currentTime)}</span>
                         <span>{"0:30"}</span>
@@ -151,9 +179,11 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, { onSongLoaded?: (title: strin
                     </svg>
                 </Button>
             </div>
-
         </div>
     );
 });
 
-export { AudioPlayer }
+AudioPlayer.displayName = "AudioPlayer";
+
+export { AudioPlayer };
+
