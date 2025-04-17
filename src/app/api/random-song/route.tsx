@@ -6,14 +6,12 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const playlistID = searchParams.get("playlistID");
 
-    //TODO uncomment when its acually implemented
-    // if (!playlistID) {
-    //     return NextResponse.json({ error: "playlistID is missing or invalid" }, { status: 400 });
-    // }
+    if (!playlistID) {
+        return NextResponse.json({ error: "playlistID is missing or invalid" }, { status: 400 });
+    }
 
     const response = await fetch(
-        "https://api.deezer.com/playlist/9486319502"
-        // "https://api.deezer.com/playlist/" + playlistID
+        "https://api.deezer.com/playlist/" + playlistID
     );
 
     if (!response.ok) {
@@ -26,7 +24,10 @@ export async function GET(request: Request) {
     }
 
     const max = fullplaylist.tracks.data.length;
-    const foundTrack = fullplaylist.tracks.data[Math.floor(Math.random() * max)]!;
+    
+    //To jest dla mojego debugera, nie ruszajcie
+    // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
+    const foundTrack = fullplaylist.tracks.data[Math.floor(Math.random() * max)] as track;
 
     const trackDetails = {
         title: foundTrack.title,

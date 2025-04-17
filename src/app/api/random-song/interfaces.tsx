@@ -78,6 +78,8 @@ export interface playlist {
     }
 }
 
-export interface DeezerSearchTrack {
-    data: track[];
+export interface trackDetails {
+        title: string
+        artist: string
+        preview: string
 }
