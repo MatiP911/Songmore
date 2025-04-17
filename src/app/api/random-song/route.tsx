@@ -24,16 +24,23 @@ export async function GET(request: Request) {
     }
 
     const max = fullplaylist.tracks.data.length;
-    
-    //To jest dla mojego debugera, nie ruszajcie
+
+    //To jest dla mojego debugera, nie ruszacie
     // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
-    const foundTrack = fullplaylist.tracks.data[Math.floor(Math.random() * max)] as track;
+    let foundTrack = fullplaylist.tracks.data[Math.floor(Math.random() * max)] as track;
+
+    while (foundTrack.readable !== true || !foundTrack.preview) {
+        //To jest dla mojego debugera, nie ruszacie
+        // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
+        foundTrack = fullplaylist.tracks.data[Math.floor(Math.random() * max)] as track;
+    };
 
     const trackDetails = {
         title: foundTrack.title,
         artist: foundTrack.artist.name,
         preview: foundTrack.preview,
     };
+
 
     return NextResponse.json(trackDetails, { status: 200 });
 }

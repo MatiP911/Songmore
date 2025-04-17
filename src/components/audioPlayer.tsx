@@ -94,7 +94,9 @@ const AudioPlayer = forwardRef<
                 currentAudio.src = "";
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
     useEffect(() => {
         if (!currentAudio) return;
 
