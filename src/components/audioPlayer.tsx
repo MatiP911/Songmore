@@ -6,8 +6,10 @@ import React, {
     useRef,
     useState,
 } from "react";
+
 import { Progress } from "./ui/progress.tsx";
 import { Button } from "./ui/button.tsx";
+import type { DeezerSearchTrack } from "../app/api/random-song/interfaces.tsx";
 
 const nrOfStages = 6;
 
