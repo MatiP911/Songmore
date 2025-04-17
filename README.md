@@ -18,14 +18,14 @@
 
 # Todo
 
-[] Dodać funkcjonalność wyszukiwania piosenke (oraz przy porównywaniu usuwać może to co w `()`) by pominąć wszelkie remasterd i from i jakieś teksty samych piosenek
-[] Ulepszyć UI (bądź też zrobić od nowa)
-    [] Ustandaryzować bloczki z poprzednimi strzałami (teraz przesuwa UI)
-    [] Dodać screen wygrania
-[] Dodać funkcjonalność wyboru playlist
-    [] Oddzielną stronę wyboru
-    [] Dodać opcje pobierania piosenek z wielu playlist
-[] Dodać slider głośności
+- [] Dodać funkcjonalność wyszukiwania piosenke (oraz przy porównywaniu usuwać może to co w `()`) by pominąć wszelkie remasterd i from i jakieś teksty samych piosenek
+- [] Ulepszyć UI (bądź też zrobić od nowa)
+   - [] Ustandaryzować bloczki z poprzednimi strzałami (teraz przesuwa UI)
+   - [] Dodać screen wygrania
+- [] Dodać funkcjonalność wyboru playlist
+   - [] Oddzielną stronę wyboru
+   - [] Dodać opcje pobierania piosenek z wielu playlist
+- [] Dodać slider głośności
 
 - Naprawiać bugi (raczej tutaj już zakładka issue w github)
 
