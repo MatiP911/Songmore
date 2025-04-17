@@ -25,6 +25,7 @@ next-env.d.ts
 .DS_Store
 *.pem
 
+
 # debug
 npm-debug.log*
 yarn-debug.log*
@@ -44,3 +45,6 @@ yarn-error.log*
 
 # idea files
 .idea
+
+#npm packages that we don't use
+package-lock.json
