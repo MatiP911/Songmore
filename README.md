@@ -3,17 +3,31 @@
 # Instrukcje
 
 1. zainstalować git (https://git-scm.com/downloads)
-1+. zainstalować git cli (https://cli.github.com/)
+    1+. zainstalować git cli (https://cli.github.com/)
 2. Zainstalować pnpm (https://pnpm.io/installation)
 3. zainstalować node.js (https://nodejs.org/en)
 4. `git clone https://github.com/MatiP911/Songmore`
 5. `git checkout dev`
 6. `pnpm install`
-7. hmmm   
-trzeba stworzyć nowy plik `.env` i skopiować do niego zawartość `.env.example`   
+7. trzeba stworzyć nowy plik `.env` i skopiować do niego zawartość `.env.example`   
 `cp .env.example .env` (nie testowałem)
 8. `pnpm exec next telemetry disable`
 9. `pnpm run dev`
+
+---
+
+# Todo
+
+[] Dodać funkcjonalność wyszukiwania piosenke (oraz przy porównywaniu usuwać może to co w `()`) by pominąć wszelkie remasterd i from i jakieś teksty samych piosenek
+[] Ulepszyć UI (bądź też zrobić od nowa)
+    [] Ustandaryzować bloczki z poprzednimi strzałami (teraz przesuwa UI)
+    [] Dodać screen wygrania
+[] Dodać funkcjonalność wyboru playlist
+    [] Oddzielną stronę wyboru
+    [] Dodać opcje pobierania piosenek z wielu playlist
+[] Dodać slider głośności
+
+- Naprawiać bugi (raczej tutaj już zakładka issue w github)
 
 ---
 
