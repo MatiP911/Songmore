@@ -2,6 +2,7 @@
 
 // TODO if not used delete useEffect
 import { useEffect, useRef, useState } from "react";
+import React from "react";
 import { Button } from "./ui/button.tsx";
 import { Input } from "./ui/input.tsx";
 import { ArrowRight, Search, X } from "lucide-react";
@@ -196,8 +197,9 @@ export default function SongGame() {
                                     type="text"
                                     placeholder="Know it? Search for the title"
                                     value={currentGuess}
-                                    onChange={(e) =>
-                                        setCurrentGuess(e.target.value)}
+                                    onChange={(
+                                        e: React.ChangeEvent<HTMLInputElement>,
+                                    ) => setCurrentGuess(e.target.value)}
                                     className="pl-10 bg-gray-900 border-gray-700 text-white rounded-md"
                                 />
                             </div>

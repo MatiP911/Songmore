@@ -1,5 +1,6 @@
 import "../styles/globals.css";
 
+import React from "react";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 
