@@ -1,68 +1,46 @@
 import { NextResponse } from "next/server";
+import type { playlist, track } from "./interfaces.tsx"
 
-interface Track {
-    id: number;
-    readable?: boolean;
-    title: string;
-    title_short: string;
-    title_version: string;
-    link: string;
-    duration: number;
-    rank: number;
-    explicit_lyrics: boolean;
-    explicit_content_lyrics: number;
-    explicit_content_cover: number;
-    preview: string;
-    md5_image: string;
-    position: number;
-    artist: {
-        id: number;
-        name: string;
-        link: string;
-        picture: string;
-        picture_small: string;
-        picture_medium: string;
-        picture_big: string;
-        picture_xl: string;
-        radio: boolean;
-        tracklist: string;
-        type: string;
-    };
-    album: {
-        id: number;
-        title: string;
-        cover: string;
-        cover_small: string;
-        cover_medium: string;
-        cover_big: string;
-        cover_xl: string;
-        md5_image: string;
-        tracklist: string;
-        type: string;
-    };
-    type: string;
-}
+export async function GET(request: Request) {
 
-interface DeezerSeach {
-    data: Track[];
-}
-export async function GET() {
+    const { searchParams } = new URL(request.url);
+    const playlistID = searchParams.get("playlistID");
+
+    if (!playlistID) {
+        return NextResponse.json({ error: "playlistID is missing or invalid" }, { status: 400 });
+    }
+
     const response = await fetch(
-        "https://api.deezer.com/search/track?q=eminem",
+        "https://api.deezer.com/playlist/" + playlistID
     );
+
     if (!response.ok) {
         throw new Error(`Deezer api returned error. ${response.status}`);
     }
-    const data = await response.json() as DeezerSeach;
-    if (!data.data || data.data.length === 0) {
+    const fullplaylist = await response.json() as playlist;
+
+    if (!fullplaylist.tracks.data || fullplaylist.tracks.data.length === 0) {
         return NextResponse.json({ error: "no tracks found" }, { status: 404 });
     }
-    const foundTrack = data.data[0];
+
+    const max = fullplaylist.tracks.data.length;
+
+    //To jest dla mojego debugera, nie ruszacie
+    // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
+    let foundTrack = fullplaylist.tracks.data[Math.floor(Math.random() * max)] as track;
+
+    while (foundTrack.readable !== true || !foundTrack.preview) {
+        //To jest dla mojego debugera, nie ruszacie
+        // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
+        foundTrack = fullplaylist.tracks.data[Math.floor(Math.random() * max)] as track;
+    };
+
     const trackDetails = {
         title: foundTrack.title,
         artist: foundTrack.artist.name,
         preview: foundTrack.preview,
     };
+
 
     return NextResponse.json(trackDetails, { status: 200 });
 }

@@ -29,7 +29,11 @@
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"]
-    }
+
+    },
+    /* Imports */
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
   },
   "include": [
     "next-env.d.ts",

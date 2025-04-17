@@ -6,8 +6,10 @@ import React, {
     useRef,
     useState,
 } from "react";
+
 import { Progress } from "./ui/progress.tsx";
 import { Button } from "./ui/button.tsx";
+import type { trackDetails } from "../app/api/random-song/interfaces.tsx";
 
 const nrOfStages = 6;
 
@@ -56,37 +58,43 @@ const AudioPlayer = forwardRef<
     }));
 
     useEffect(() => {
-        const getData = async () => {
-            try {
-                const response = await fetch("/api/random-song");
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                const data = await response.json();
-
-                if (data) {
-                    const audio = new Audio(data.preview);
-                    audio.volume = currentVolume; // Set initial volume
-                    setCurrentAudio(audio); // Store the Audio object
-                    setSongTitle(data.title);
-                    setSongArtist(data.artist);
-                    if (_props.onSongLoaded) {
-                        _props.onSongLoaded(data.title, data.artist);
+        const getData = () => {
+            const playlistID = 9486319502;
+            fetch(`/api/random-song?playlistID=${playlistID}`)
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
                     }
-                } else  {
-                    console.error("Invalid data format from API:", data);
-                }
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            }
+                    return response.json();
+                })
+                .then((data: trackDetails) => {
+                    if (data) {
+                        const audio = new Audio(data.preview);
+                        audio.volume = currentVolume;
+                        setCurrentAudio(audio);
+                        setSongTitle(data.title);
+                        setSongArtist(data.artist);
+                        if (_props.onSongLoaded) {
+                            _props.onSongLoaded(data.title, data.artist);
+                        }
+                    } else {
+                        console.error("Invalid data format from API:", data);
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error fetching data:", error);
+                });
         };
+
         getData();
+
         return () => {
             if (currentAudio) {
                 currentAudio.pause();
                 currentAudio.src = "";
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
