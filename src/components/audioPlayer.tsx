@@ -2,6 +2,7 @@ import React, {
     forwardRef,
     useEffect,
     useImperativeHandle,
+    //TODO userRef is not used anywhere
     useRef,
     useState,
 } from "react";
@@ -34,7 +35,7 @@ const AudioPlayer = forwardRef<
     );
     const stageDurations = [0.5, 2, 3, 5, 15, 30];
 
-    const [currentVolume, setCurrentVolume] = useState(0.02);
+    const [currentVolume, _setCurrentVolume] = useState(0.02);
 
     useImperativeHandle(ref, () => ({
         setStage: (stage: number) => {
