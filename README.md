@@ -18,9 +18,9 @@
 
 # Todo
 
-- [] Dodać funkcjonalność wyszukiwania piosenke (oraz przy porównywaniu usuwać może to co w `()`) by pominąć wszelkie remasterd i from i jakieś teksty samych piosenek
+- [x] Dodać funkcjonalność wyszukiwania piosenke (oraz przy porównywaniu usuwać może to co w `()`) by pominąć wszelkie remasterd i from i jakieś teksty samych piosenek
 - [] Ulepszyć UI (bądź też zrobić od nowa)
-   - [] Ustandaryzować bloczki z poprzednimi strzałami (teraz przesuwa UI)
+   - [x] Ustandaryzować bloczki z poprzednimi strzałami (teraz przesuwa UI)
    - [] Dodać screen wygrania
 - [] Dodać funkcjonalność wyboru playlist
    - [] Oddzielną stronę wyboru
