@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import React from "react";
 import { Button } from "./ui/button.tsx";
 import { Input } from "./ui/input.tsx";
+import { AutoCompleteInput } from "./ui/autoCompleteInput.tsx";
 import { ArrowRight, Search, X } from "lucide-react";
 import { AudioPlayer, type AudioPlayerHandle } from "./audioPlayer.tsx";
 
@@ -108,7 +109,7 @@ export default function SongGame() {
         <div className="flex flex-col items-center justify-between w-full min-h-screen">
             {/* Header */}
             <header className="w-full flex items-center justify-center py-4 border-b border-gray-800">
-                <h1 className="text-3xl font-bold">
+                <h1 className="text-3xl font-bold cursor-pointer select-none" onClick={resetGame}>
                     <span className="text-white">Song</span>
                     <span className="text-green-500">more</span>
                 </h1>
@@ -193,14 +194,9 @@ export default function SongGame() {
                         <div className="w-full space-y-4">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-                                <Input
-                                    type="text"
-                                    placeholder="Know it? Search for the title"
-                                    value={currentGuess}
-                                    onChange={(
-                                        e: React.ChangeEvent<HTMLInputElement>,
-                                    ) => setCurrentGuess(e.target.value)}
-                                    className="pl-10 bg-gray-900 border-gray-700 text-white rounded-md"
+                                <AutoCompleteInput 
+                                    value={currentGuess} 
+                                    onChange={setCurrentGuess} 
                                 />
                             </div>
 
