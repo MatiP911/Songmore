@@ -18,7 +18,10 @@
 
 # Todo
 
-- [x] Dodać funkcjonalność wyszukiwania piosenke (oraz przy porównywaniu usuwać może to co w `()`) by pominąć wszelkie remasterd i from i jakieś teksty samych piosenek
+- [] Dodać funkcjonalność wyszukiwania piosenke
+    - [x] Dodaj funkcjonalnosc wyszukiwania
+    - [x] pomijac to co w nawiasach by pominąć wszelkie remasterd i from i jakieś teksty samych piosenek
+    - [] Wystarczy strzelić w poprawny tytuł piosenki i nadal akceptuje (nie zwraca uwagi na autora)
 - [] Ulepszyć UI (bądź też zrobić od nowa)
    - [x] Ustandaryzować bloczki z poprzednimi strzałami (teraz przesuwa UI)
    - [] Dodać screen wygrania
