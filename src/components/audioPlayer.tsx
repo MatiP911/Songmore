@@ -50,8 +50,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, { onSongLoaded?: (title: strin
                 })
                 .then((data: trackDetails) => {
                     if (data) {
-                        const audio = new Audio(data.preview);
-                        audio.volume = currentVolume;
+                        const audio = new Audio(`/api/proxy-audio?url=${encodeURIComponent(data.preview)}`);audio.volume = currentVolume;
                         setCurrentAudio(audio);
                         setSongTitle(data.title);
                         setSongArtist(data.artist);
