@@ -77,9 +77,3 @@ export interface playlist {
         checksum: string
     }
 }
-
-export interface trackDetails {
-        title: string
-        artist: string
-        preview: string
-}

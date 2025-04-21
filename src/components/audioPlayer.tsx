@@ -8,7 +8,6 @@ import React, {
 
 import { Progress } from "./ui/progress.tsx";
 import { Button } from "./ui/button.tsx";
-import type { trackDetails } from "../app/api/random-song/interfaces.tsx";
 
 const nrOfStages = 6;
 
@@ -46,16 +45,17 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, { onSongLoaded?: (title: strin
             fetch(`/api/random-song?playlistID=${playlistID}`)
                 .then((response) => {
                     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                    return response.json();
+                    // TODO: what if response headears are not found ??
+                    setSongTitle(response.headers.get("X-Song-Title") ?? "");
+                    setSongArtist(response.headers.get("X-Song-Artist") ?? "");
+                    _props.onSongLoaded?.(response.headers.get("X-Song-Title") ?? "", response.headers.get("X-Song-Artist") ?? "");
+                    return response.blob();
                 })
-                .then((data: trackDetails) => {
+                .then((data) => {
                     if (data) {
-                        const audio = new Audio(data.preview);
+                        const audio = new Audio(URL.createObjectURL(data));
                         audio.volume = currentVolume;
                         setCurrentAudio(audio);
-                        setSongTitle(data.title);
-                        setSongArtist(data.artist);
-                        _props.onSongLoaded?.(data.title, data.artist);
                     } else {
                         console.error("Invalid data format from API:", data);
                     }
