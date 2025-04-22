@@ -45,13 +45,20 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, { onSongLoaded?: (title: strin
             fetch(`/api/random-song?playlistID=${playlistID}`)
                 .then((response) => {
                     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                    // TODO: what if response headears are not found ??
-                    setSongTitle(response.headers.get("X-Song-Title") ?? "");
-                    setSongArtist(response.headers.get("X-Song-Artist") ?? "");
-                    _props.onSongLoaded?.(response.headers.get("X-Song-Title") ?? "", response.headers.get("X-Song-Artist") ?? "");
+
+                    const title = response.headers.get("X-Track-Title") ?? "";
+                    const artist = response.headers.get("X-Track-Artist") ?? "";
+
+                    if (!title || !artist) {
+                        console.warn("Missing song metadata in headers");
+                    }
+
+                    setSongTitle(title);
+                    setSongArtist(artist);
+                    _props.onSongLoaded?.(title, artist);
+
                     return response.blob();
-                })
-                .then((data) => {
+                }).then((data) => {
                     if (data) {
                         const audio = new Audio(URL.createObjectURL(data));
                         audio.volume = currentVolume;
