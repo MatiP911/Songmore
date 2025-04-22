@@ -139,6 +139,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, { onSongLoaded?: (title: strin
             <div className="flex justify-center">
                 <Button
                     onClick={playCurrentClip}
+                    disabled={currentAudio ? false : true}
                     className="rounded-full h-16 w-16 bg-teal-500 hover:bg-teal-600 p-0 flex items-center justify-center shadow-lg transition-transform transform hover:scale-105"
                 >
                     {isPlaying ? (
