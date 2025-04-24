@@ -1,37 +1,45 @@
-import React from "react";
-import { Button } from "./button.tsx";
+"use client"
+import { Music, Guitar, PianoIcon, Disc, GuitarIcon, TreePalmIcon, Settings, MicVocal, Flag } from "lucide-react"
 
 const genres = [
-  "Pop", "Rock", "Hip-Hop", "Jazz",
-  "Classical", "Electronic", "Country", "Reggae",
-  "R&B", "Metal", "Folk", "Latin"
-];
+  { name: "Pop", icon: <Music className="w-10 h-10 mb-2" /> },
+  { name: "Rock", icon: <Guitar className="w-10 h-10 mb-2" /> },
+  { name: "Classical", icon: <PianoIcon className="w-10 h-10 mb-2" /> },
+  { name: "Rap", icon: <MicVocal className="w-10 h-10 mb-2" /> },
+  { name: "Electronic", icon: <Disc className="w-10 h-10 mb-2" /> },
+  { name: "Country", icon: <GuitarIcon className="w-10 h-10 mb-2" /> },
+  { name: "Reggae", icon: <TreePalmIcon className="w-10 h-10 mb-2" /> },
+  { name: "Poland", icon: <Flag className="w-10 h-10 mb-2" /> },
+  { name: "Custom", icon: <Settings className="w-10 h-10 mb-2" /> },
+]
 
 type GenreSelectorProps = {
-  selected: string | null;
-  onSelect: (genre: string) => void;
-};
+  selected: string | null
+  onSelect: (genre: string) => void
+}
 
 export default function GenreSelector({ selected, onSelect }: GenreSelectorProps) {
   return (
-    <div>
-      <div className="grid grid-cols-3 sm:grid-cols-3 gap-4">
+    <div className="w-full">
+      <div className="grid grid-cols-3 gap-4 mb-8">
         {genres.map((genre) => {
-          const isActive = genre === selected;
+          const isActive = genre.name === selected
           return (
-            <Button
-              key={genre}
-              variant={isActive ? "default" : "outline"}
-              className={`rounded-xl py-6 px-4 truncate whitespace-nowrap transition-colors duration-200 ${
-                isActive ? "bg-teal-500 text-white" : "bg-white/5 text-white"
-              }`}
-              onClick={() => onSelect(genre)}
+            <div
+              key={genre.name}
+              onClick={() => onSelect(genre.name)}
+              className={`
+                bg-[#13131f] rounded-lg p-6 flex flex-col items-center justify-center 
+                cursor-pointer transition-colors
+                ${isActive ? "bg-[#1a1a28] ring-2 ring-[#1EBCB6]" : "hover:bg-[#1a1a28]"}
+              `}
             >
-              {genre}
-            </Button>
-          );
+              {genre.icon}
+              <span>{genre.name}</span>
+            </div>
+          )
         })}
       </div>
     </div>
-  );
+  )
 }
