@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import type { playlist, track } from "./interfaces.tsx"
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
@@ -35,12 +37,23 @@ export async function GET(request: Request) {
         foundTrack = fullplaylist.tracks.data[Math.floor(Math.random() * max)] as track;
     };
 
-    const trackDetails = {
-        title: foundTrack.title,
-        artist: foundTrack.artist.name,
-        preview: foundTrack.preview,
-    };
+    const mp3Response = await fetch(foundTrack.preview);
+    if (!mp3Response.ok) {
+        return NextResponse.json(
+            { error: "Failed to fetch MP3 preview data" },
+            { status: 502 },
+        );
+    }
+    const mp3Blob = await mp3Response.blob();
 
+    const headers = new Headers();
+    headers.set("Content-Type", "audio/mpeg");
+    headers.set("Cache-Control", "no-store, private");
+    headers.set("X-Track-Title", foundTrack.title);
+    headers.set("X-Track-Artist", foundTrack.artist.name);
 
-    return NextResponse.json(trackDetails, { status: 200 });
+    return new NextResponse(mp3Blob, {
+        status: 200,
+        headers: headers,
+    });
 }

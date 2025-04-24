@@ -78,8 +78,7 @@ export interface playlist {
     }
 }
 
-export interface trackDetails {
-        title: string
-        artist: string
-        preview: string
+export interface genre {
+    genre: string;
+    playlistID: number;
 }

@@ -8,7 +8,6 @@ import React, {
 
 import { Progress } from "./ui/progress.tsx";
 import { Button } from "./ui/button.tsx";
-import type { trackDetails } from "../app/api/random-song/interfaces.tsx";
 
 const nrOfStages = 6;
 
@@ -46,16 +45,24 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, { onSongLoaded?: (title: strin
             fetch(`/api/random-song?playlistID=${playlistID}`)
                 .then((response) => {
                     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-                    return response.json();
-                })
-                .then((data: trackDetails) => {
+
+                    const title = response.headers.get("X-Track-Title") ?? "";
+                    const artist = response.headers.get("X-Track-Artist") ?? "";
+
+                    if (!title || !artist) {
+                        console.warn("Missing song metadata in headers");
+                    }
+
+                    setSongTitle(title);
+                    setSongArtist(artist);
+                    _props.onSongLoaded?.(title, artist);
+
+                    return response.blob();
+                }).then((data) => {
                     if (data) {
-                        const audio = new Audio(data.preview);
+                        const audio = new Audio(URL.createObjectURL(data));
                         audio.volume = currentVolume;
                         setCurrentAudio(audio);
-                        setSongTitle(data.title);
-                        setSongArtist(data.artist);
-                        _props.onSongLoaded?.(data.title, data.artist);
                     } else {
                         console.error("Invalid data format from API:", data);
                     }
@@ -132,6 +139,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, { onSongLoaded?: (title: strin
             <div className="flex justify-center">
                 <Button
                     onClick={playCurrentClip}
+                    disabled={currentAudio ? false : true}
                     className="rounded-full h-16 w-16 bg-teal-500 hover:bg-teal-600 p-0 flex items-center justify-center shadow-lg transition-transform transform hover:scale-105"
                 >
                     {isPlaying ? (
