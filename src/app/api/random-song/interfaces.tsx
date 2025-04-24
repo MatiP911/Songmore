@@ -77,3 +77,8 @@ export interface playlist {
         checksum: string
     }
 }
+
+export interface genre {
+    genre: string;
+    playlistID: number;
+}

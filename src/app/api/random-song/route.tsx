@@ -48,7 +48,7 @@ export async function GET(request: Request) {
 
     const headers = new Headers();
     headers.set("Content-Type", "audio/mpeg");
-
+    headers.set("Cache-Control", "no-store, private");
     headers.set("X-Track-Title", foundTrack.title);
     headers.set("X-Track-Artist", foundTrack.artist.name);
 

@@ -7,6 +7,7 @@ import { Button } from "./ui/button.tsx";
 import { AutoCompleteInput } from "./ui/autoCompleteInput";
 import { ArrowRight, X } from "lucide-react";
 import { AudioPlayer, type AudioPlayerHandle } from "./audioPlayer.tsx";
+import GenreSelector from "./ui/genreSelector.tsx";
 
 type GuessResult = {
     guess: string;
@@ -20,6 +21,7 @@ export default function SongGame() {
     const [guessResults, setGuessResults] = useState<GuessResult[]>([]);
     const [currentSong, setSongTitle] = useState("");
     const [currentSongArtist, setSongArtist] = useState("");
+    const [genre, setGenre] = useState<string | null>(null);
 
     const audioRef = useRef<AudioPlayerHandle | null>(null);
 
@@ -117,10 +119,16 @@ export default function SongGame() {
                         <h2 className="text-2xl font-medium">
                             Try to <span className="text-teal-400">guess the song</span> from listening to small parts of it
                         </h2>
+                        <GenreSelector selected={genre} onSelect={setGenre} />
+                        <div className="h-2" />  
                         <Button onClick={startGame} className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-6 text-lg">
                             Start Game
                         </Button>
+                        <p className="mt-12 text-sm italic text-gray-400 text-center max-w-2xl">
+                            &quot;Every song is a memory. Let’s see how sharp yours is.&quot;
+                        </p>
                     </div>
+                                    
                 )}
 
                 {gameState === "playing" && (
@@ -199,9 +207,7 @@ export default function SongGame() {
                     </div>
                 )}
 
-                <p className="mt-12 text-sm italic text-gray-400 text-center max-w-2xl">
-                    &quot;Every song is a memory. Let’s see how sharp yours is.&quot;
-                </p>
+
             </main>
         </div>
     );
