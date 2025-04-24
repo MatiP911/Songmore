@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import React from "react";
 import { Button } from "./ui/button.tsx";
 import { AutoCompleteInput } from "./ui/autoCompleteInput";
-import { ArrowRight, X } from "lucide-react";
+import { ArrowRight, Check, X } from "lucide-react";
 import { AudioPlayer, type AudioPlayerHandle } from "./audioPlayer.tsx";
 import GenreSelector from "./ui/genreSelector.tsx";
 
@@ -110,7 +110,7 @@ export default function SongGame() {
                     <span className="text-white">Song</span>
                     <span className="text-teal-400">more</span>
                 </h1>
-                <p className="text-md text-gray-400 mt-3">Can you guess the song in 6 tries?</p>
+                <p className="hidden sm:block text-md text-gray-400 mt-3">Can you guess the song in 6 tries?</p>
             </header>
 
             <main className="w-full flex flex-col items-center gap-10 px-4 max-w-2xl mx-auto">
@@ -120,7 +120,7 @@ export default function SongGame() {
                             Try to <span className="text-teal-400">guess the song</span> from listening to small parts of it
                         </h2>
                         <GenreSelector selected={genre} onSelect={setGenre} />
-                        <div className="h-2" />  
+                        <div className="h-2" />
                         <Button onClick={startGame} className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-6 text-lg">
                             Start Game
                         </Button>
@@ -128,31 +128,31 @@ export default function SongGame() {
                             &quot;Every song is a memory. Let’s see how sharp yours is.&quot;
                         </p>
                     </div>
-                                    
+
                 )}
 
                 {gameState === "playing" && (
                     <>
-                        <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
                             {guessResults.map((result, index) => (
                                 <div
                                     key={index}
-                                    className={`min-h-[3.5rem] px-6 py-3 flex items-center justify-between text-sm sm:text-base rounded-xl shadow-md overflow-hidden whitespace-nowrap backdrop-blur-sm border ${result.isSkipped
-                                        ? "bg-white/10 text-gray-300 border-white/10"
-                                        : result.isCorrect
-                                            ? "bg-red-600 text-white border-transparent"
-                                            : "bg-white/10 text-white border-white/10"
+                                    className={`min-h-[3.5rem] px-6 py-3 flex items-center justify-between text-sm sm:text-base rounded-xl shadow-md whitespace-nowrap backdrop-blur-sm border 
+                                        ${result.isSkipped ? "bg-white/10 text-gray-300 border-white/10"
+                                            : result.isCorrect ?
+                                                "bg-green-500/60 text-white border-transparent"
+                                                : "bg-red-600/20 text-white border-white/10"
                                         }`}
                                 >
                                     {result.isSkipped ? (
                                         <>
-                                            <ArrowRight className="h-4 w-4" />
+                                            <ArrowRight className="h-4 w-4 flex-shrink-0" />
                                             <span className="mx-auto">SKIPPED</span>
                                         </>
                                     ) : (
                                         <>
-                                            {result.isCorrect && <X className="h-4 w-4" />}
-                                            <span className="mx-auto">{result.guess}</span>
+                                            {!result.isCorrect ? <X className="h-4 w-4 flex-shrink-0" /> : <Check className="h-4 w-4 flex-shrink-0" />}
+                                            <span className="mx-auto truncate">{result.guess}</span>
                                         </>
                                     )}
                                 </div>
@@ -173,16 +173,16 @@ export default function SongGame() {
                             }}
                         />
 
-                        <div className="w-full space-y-4 mt-8">
+                        <div className="w-full space-y-4">
                             <AutoCompleteInput value={currentGuess} onChange={setCurrentGuess} />
                             <div className="flex gap-4">
-                                <Button onClick={skipGuess} variant="outline" className="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/20">
+                                <Button onClick={skipGuess} variant="outline" className="min-h-[3.5rem] flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/20">
                                     SKIP
                                 </Button>
                                 <Button
                                     onClick={submitGuess}
                                     disabled={!currentGuess.trim()}
-                                    className="flex-1 bg-teal-500 hover:bg-teal-600 text-white"
+                                    className="min-h-[3.5rem] flex-1 bg-teal-500 hover:bg-teal-600 text-white"
                                 >
                                     SUBMIT
                                 </Button>
@@ -199,7 +199,7 @@ export default function SongGame() {
                             <p className="text-2xl font-bold text-teal-400">{`${currentSong} - ${currentSongArtist}`}</p>
                         </div>
                         <p className="text-white/70">
-                            You got it {guessResults.some((r) => r.isCorrect) ? "right" : "wrong"} in {guessResults.length} tries
+                            You got it {guessResults.some((r) => r.isCorrect) ? `right in ${guessResults.length} tries` : "wrong, better luck next time!"}
                         </p>
                         <Button onClick={resetGame} className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-2">
                             Play Again

@@ -40,11 +40,11 @@ export function AutoCompleteInput({ value, onChange }: Props) {
   return (
     <div className="w-full relative">
       {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute top-0 translate-y-[-110%] w-full bg-gray-900 text-white border border-gray-700 rounded shadow-md max-h-64 overflow-y-auto z-50 scrollbar-hide">
+        <div className="absolute top-0 translate-y-[-105%] w-full bg-gray-900/20 backdrop-blur-lg text-white border border-gray-700 rounded-xl shadow-md max-h-64 overflow-y-auto z-50 scrollbar-hide">
           {suggestions.map((s) => (
             <div
               key={s.id}
-              className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
+              className="px-4 py-2 hover:bg-teal-600 cursor-pointer"
               onClick={() => {
                 suppressFetchRef.current = true;
                 onChange(`${s.title} - ${s.artist.name}`);
@@ -67,7 +67,7 @@ export function AutoCompleteInput({ value, onChange }: Props) {
             onChange(e.target.value);
             setShowSuggestions(true);
           }}
-          className="pl-10 bg-gray-900 border-gray-700 text-white rounded-md"
+          className="min-h-[3.5rem] pl-10 bg-gray-900/20 border-gray-700 text-white rounded-md"
         />
       </div>
     </div>
