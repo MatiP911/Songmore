@@ -20,7 +20,13 @@ export interface AudioPlayerHandle {
     stopPlaying: () => void;
 }
 
-const AudioPlayer = forwardRef<AudioPlayerHandle, { onSongLoaded?: (title: string, artist: string) => void }>((_props, ref) => {
+interface AudioPlayerProps {
+    onSongLoaded?: (title: string, artist: string) => void;
+    genre: number | null; // Add the genre prop
+}
+
+
+const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(({ onSongLoaded, genre }, ref) => {
     const [currentTime, setCurrentTime] = useState(0);
     const [currentSong, setSongTitle] = useState("");
     const [currentSongArtist, setSongArtist] = useState("");
@@ -41,7 +47,11 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, { onSongLoaded?: (title: strin
 
     useEffect(() => {
         const getData = () => {
-            const playlistID = 9486319502;
+            if (!genre) {
+                console.error("genre in null")
+                return
+            }
+            const playlistID = genre;
             fetch(`/api/random-song?playlistID=${playlistID}`)
                 .then((response) => {
                     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
@@ -55,7 +65,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, { onSongLoaded?: (title: strin
 
                     setSongTitle(title);
                     setSongArtist(artist);
-                    _props.onSongLoaded?.(title, artist);
+                    onSongLoaded?.(title, artist);
 
                     return response.blob();
                 }).then((data) => {

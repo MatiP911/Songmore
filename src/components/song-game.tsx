@@ -21,7 +21,7 @@ export default function SongGame() {
     const [guessResults, setGuessResults] = useState<GuessResult[]>([]);
     const [currentSong, setSongTitle] = useState("");
     const [currentSongArtist, setSongArtist] = useState("");
-    const [genre, setGenre] = useState<string | null>(null);
+    const [genre, setGenre] = useState<number | null>(null);
 
     const audioRef = useRef<AudioPlayerHandle | null>(null);
 
@@ -47,12 +47,13 @@ export default function SongGame() {
             setSongArtist(audioRef.current.getArtist());
         }
 
-        const normalizedGuess = normalizeString(currentGuess);
-        const normalizedSong = normalizeString(currentSong);
+        const encodedGuess = encodeURIComponent(currentGuess);
+
+        console.log(encodedGuess, currentSong)
 
         const isCorrect =
-            normalizedGuess === normalizedSong ||
-            normalizedGuess.includes(normalizedSong);
+            encodedGuess === currentSong ||
+            encodedGuess.includes(currentSong);
 
         const newResult: GuessResult = {
             guess: currentGuess,
@@ -117,11 +118,14 @@ export default function SongGame() {
                 {gameState === "start" && (
                     <div className="text-center space-y-8">
                         <h2 className="text-2xl font-medium">
-                            Try to <span className="text-teal-400">guess the song</span> from listening to small parts of it
+                            Select <span className="text-teal-400">genre</span> and try to <span className="text-teal-400">guess the song</span> from listening to small parts of it
                         </h2>
                         <GenreSelector selected={genre} onSelect={setGenre} />
                         <div className="h-2" />
-                        <Button onClick={startGame} className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-6 text-lg">
+                        <Button
+                            disabled={!genre}
+                            onClick={startGame}
+                            className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-6 text-lg">
                             Start Game
                         </Button>
                         <p className="mt-12 text-sm italic text-gray-400 text-center max-w-2xl">
@@ -167,6 +171,7 @@ export default function SongGame() {
 
                         <AudioPlayer
                             ref={audioRef}
+                            genre={genre}
                             onSongLoaded={(title, artist) => {
                                 setSongTitle(title);
                                 setSongArtist(artist);
@@ -196,7 +201,7 @@ export default function SongGame() {
                         <h2 className="text-2xl font-bold">Game Over!</h2>
                         <div className="p-6 bg-white/5 border border-white/10 rounded-lg">
                             <p className="text-xl mb-2">The song was</p>
-                            <p className="text-2xl font-bold text-teal-400">{`${currentSong} - ${currentSongArtist}`}</p>
+                            <p className="text-2xl font-bold text-teal-400">{`${decodeURIComponent(currentSong)} - ${decodeURIComponent(currentSongArtist)}`}</p>
                         </div>
                         <p className="text-white/70">
                             You got it {guessResults.some((r) => r.isCorrect) ? `right in ${guessResults.length} tries` : "wrong, better luck next time!"}

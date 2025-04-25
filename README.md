@@ -26,7 +26,8 @@
    - [x] Ustandaryzować bloczki z poprzednimi strzałami (teraz przesuwa UI)
    - [] Dodać screen wygrania
 - [] Dodać funkcjonalność wyboru playlist
-   - [] Oddzielną stronę wyboru
+   - [x] Oddzielną stronę wyboru
+   - [] Inny system dla muzyki klasycznej - losowanie autora i wybór losowego utworu z `top_track`
    - [] Dodać opcje pobierania piosenek z wielu playlist
 - [] Dodać slider głośności
 
