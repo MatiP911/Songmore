@@ -12,6 +12,8 @@ export function AutoCompleteInput({ value, onChange }: Props) {
   const [suggestions, setSuggestions] = useState<track[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const suppressFetchRef = useRef(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
 
   const fetchSuggestions = async (query: string) => {
     if (!query) return setSuggestions([]);
@@ -37,8 +39,24 @@ export function AutoCompleteInput({ value, onChange }: Props) {
     return () => clearTimeout(delayDebounce);
   }, [value]);
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+  
+
   return (
-    <div className="w-full relative">
+    <div className="w-full relative" ref={wrapperRef}>
       {showSuggestions && suggestions.length > 0 && (
         <div className="absolute top-0 translate-y-[-105%] w-full bg-gray-900/20 backdrop-blur-lg text-white border border-gray-700 rounded-xl shadow-md max-h-64 overflow-y-auto z-50 scrollbar-hide">
           {suggestions.map((s) => (
