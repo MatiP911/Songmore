@@ -28,6 +28,7 @@
 - [] Dodać funkcjonalność wyboru playlist
    - [x] Oddzielną stronę wyboru
    - [] Inny system dla muzyki klasycznej - losowanie autora i wybór losowego utworu z `top_track`
+   - [x] Możliwość wyboru customowej playlisty
    - [] Dodać opcje pobierania piosenek z wielu playlist
    - [] Osobny plik z danymi na gatunki i playlisty
 - [] Dodać SEED do funkcji losowania piosenek, żeby móc grać też z kimś równolegle (np w formie linku)
