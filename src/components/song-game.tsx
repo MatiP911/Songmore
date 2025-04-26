@@ -1,7 +1,7 @@
 "use client";
 
 // TODO if not used delete useEffect
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import React from "react";
 import { Button } from "./ui/button.tsx";
 import { AutoCompleteInput } from "./ui/autoCompleteInput";
@@ -38,29 +38,32 @@ export default function SongGame() {
         setCurrentGuess("");
     };
 
-    const searchParams = useSearchParams();
-    const router = useRouter();
     const [seed, setSeed] = useState<string | null>(null);
     const [shareLink, setShareLink] = useState<string | null>(null);
-    
-    useEffect(() => {
-        const existingSeed = searchParams.get("seed");
-    
-        if (existingSeed && seed === null) {
+    const router = useRouter();
+
+    function SeedLoader({ setSeed }: { setSeed: (seed: string) => void }) {
+        const searchParams = useSearchParams();
+      
+        useEffect(() => {
+          const existingSeed = searchParams.get("seed");
+      
+          if (existingSeed) {
             setSeed(existingSeed);
-        }
-    
-        if (!existingSeed && seed === null) {
+          } else {
             const newSeed = generateRandomSeed();
             setSeed(newSeed);
-    
+      
             if (typeof window !== "undefined") {
-                const url = new URL(window.location.href);
-                url.searchParams.set("seed", newSeed);
-                router.replace(url.toString());
+              const url = new URL(window.location.href);
+              url.searchParams.set("seed", newSeed);
+              router.replace(url.toString());
             }
-        }
-    }, [searchParams, router, seed]);
+          }
+        }, [searchParams, router, setSeed]);
+      
+        return null;
+      }
     
     useEffect(() => {
         if (typeof window !== "undefined" && seed) {
@@ -150,6 +153,9 @@ export default function SongGame() {
 
     return (
         <div className="flex flex-col items-center justify-start min-h-screen w-full bg-gradient-to-br from-[#0f0f1a] to-[#1a1a2e] text-white px-6 py-10 transition-all duration-500 ease-in-out">
+            <Suspense fallback={null}>
+                <SeedLoader setSeed={setSeed} />
+            </Suspense>
             <header className="w-full text-center mb-12">
                 <h1 className="text-6xl font-extrabold tracking-tight cursor-pointer select-none" onClick={resetGame}>
                     <span className="text-white">Song</span>
