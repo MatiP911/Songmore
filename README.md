@@ -26,8 +26,12 @@
    - [x] Ustandaryzować bloczki z poprzednimi strzałami (teraz przesuwa UI)
    - [] Dodać screen wygrania
 - [] Dodać funkcjonalność wyboru playlist
-   - [] Oddzielną stronę wyboru
+   - [x] Oddzielną stronę wyboru
+   - [] Inny system dla muzyki klasycznej - losowanie autora i wybór losowego utworu z `top_track`
    - [] Dodać opcje pobierania piosenek z wielu playlist
+   - [] Osobny plik z danymi na gatunki i playlisty
+- [] Dodać SEED do funkcji losowania piosenek, żeby móc grać też z kimś równolegle (np w formie linku)
+- [] Dodać tryb(?) z rundami i podsumowaniem jak poszło
 - [] Dodać slider głośności
 
 - Naprawiać bugi (raczej tutaj już zakładka issue w github)
