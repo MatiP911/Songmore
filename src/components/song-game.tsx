@@ -42,10 +42,13 @@ export default function SongGame() {
     const [shareLink, setShareLink] = useState<string | null>(null);
     const router = useRouter();
 
-    function SeedLoader({ setSeed }: { setSeed: (seed: string) => void }) {
+    function SeedLoader({ setSeed, router }: { setSeed: (seed: string) => void; router: ReturnType<typeof useRouter> }) {
         const searchParams = useSearchParams();
+        const [initialized, setInitialized] = useState(false);
       
         useEffect(() => {
+          if (initialized) return;
+      
           const existingSeed = searchParams.get("seed");
       
           if (existingSeed) {
@@ -60,7 +63,9 @@ export default function SongGame() {
               router.replace(url.toString());
             }
           }
-        }, [searchParams, router, setSeed]);
+      
+          setInitialized(true);
+        }, [initialized, searchParams, router, setSeed]);
       
         return null;
       }
@@ -154,7 +159,7 @@ export default function SongGame() {
     return (
         <div className="flex flex-col items-center justify-start min-h-screen w-full bg-gradient-to-br from-[#0f0f1a] to-[#1a1a2e] text-white px-6 py-10 transition-all duration-500 ease-in-out">
             <Suspense fallback={null}>
-                <SeedLoader setSeed={setSeed} />
+                <SeedLoader setSeed={setSeed} router={router}/>
             </Suspense>
             <header className="w-full text-center mb-12">
                 <h1 className="text-6xl font-extrabold tracking-tight cursor-pointer select-none" onClick={resetGame}>
