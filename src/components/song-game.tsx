@@ -1,166 +1,136 @@
 "use client";
 
-// TODO if not used delete useEffect
-import { useEffect, useRef, useState, Suspense } from "react";
-import React from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "./ui/button.tsx";
 import { AutoCompleteInput } from "./ui/autoCompleteInput";
 import { ArrowRight, Check, X } from "lucide-react";
 import { AudioPlayer, type AudioPlayerHandle } from "./audioPlayer.tsx";
 import GenreSelector from "./ui/genreSelector.tsx";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
-type GuessResult = {
-    guess: string;
-    isCorrect: boolean;
-    isSkipped: boolean;
+export type GuessResult = {
+  guess: string;
+  isCorrect: boolean;
+  isSkipped: boolean;
 };
 
 export function generateRandomSeed() {
-    return Math.random().toString(36).substring(2, 10);
+  return Math.random().toString(36).substring(2, 10);
 }
 
 export default function SongGame() {
-    const [gameState, setGameState] = useState<"start" | "playing" | "result">("start");
-    const [currentGuess, setCurrentGuess] = useState("");
-    const [guessResults, setGuessResults] = useState<GuessResult[]>([]);
-    const [currentSong, setSongTitle] = useState("");
-    const [currentSongArtist, setSongArtist] = useState("");
-    const [genre, setGenre] = useState<number | null>(null);
-    
-    const audioRef = useRef<AudioPlayerHandle | null>(null);
-    
-    const nrOfStages = 6; // TODO: ta stała występuje w dwóch miejscah (w audioPlayer.tsx)
-    
-    const startGame = () => {
-        setGameState("playing");
-        setGuessResults([]);
-        setCurrentGuess("");
+  const [gameState, setGameState] = useState<"start" | "playing" | "result">("start");
+  const [currentGuess, setCurrentGuess] = useState("");
+  const [guessResults, setGuessResults] = useState<GuessResult[]>([]);
+  const [currentSong, setSongTitle] = useState("");
+  const [currentSongArtist, setSongArtist] = useState("");
+  const [genre, setGenre] = useState<number | null>(null);
+  const [seed, setSeed] = useState<string | null>(null);
+  const [shareLink, setShareLink] = useState<string | null>(null);
+
+  const audioRef = useRef<AudioPlayerHandle | null>(null);
+  const router = useRouter();
+  const nrOfStages = 6;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const existingSeed = urlParams.get("seed");
+
+    if (existingSeed) {
+      setSeed(existingSeed);
+    } else {
+      const newSeed = generateRandomSeed();
+      setSeed(newSeed);
+
+      const url = new URL(window.location.href);
+      url.searchParams.set("seed", newSeed);
+      router.replace(url.toString());
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && seed) {
+      setShareLink(`${window.location.origin}${window.location.pathname}?seed=${seed}`);
+    }
+  }, [seed]);
+
+  const normalizeString = (str: string) =>
+    str.toLowerCase().replace(/\(.*?\)/g, "").replace(/\s+/g, " ").trim();
+
+  const startGame = () => {
+    setGameState("playing");
+    setGuessResults([]);
+    setCurrentGuess("");
+  };
+
+  const submitGuess = () => {
+    if (!audioRef.current) return;
+
+    if (currentSong === "") {
+      setSongTitle(audioRef.current.getSong());
+      setSongArtist(audioRef.current.getArtist());
+    }
+
+    const encodedGuess = encodeURIComponent(currentGuess);
+    const isCorrect = encodedGuess === currentSong || encodedGuess.includes(currentSong);
+
+    const newResult: GuessResult = {
+      guess: currentGuess,
+      isCorrect,
+      isSkipped: false,
     };
 
-    const [seed, setSeed] = useState<string | null>(null);
-    const [shareLink, setShareLink] = useState<string | null>(null);
-    const router = useRouter();
+    const updatedResults = [...guessResults, newResult];
+    setGuessResults(updatedResults);
+    setCurrentGuess("");
 
-    function SeedLoader({ setSeed, router }: { setSeed: (seed: string) => void; router: ReturnType<typeof useRouter> }) {
-        const searchParams = useSearchParams();
-        const [initialized, setInitialized] = useState(false);
-      
-        useEffect(() => {
-          if (initialized) return;
-      
-          const existingSeed = searchParams.get("seed");
-      
-          if (existingSeed) {
-            setSeed(existingSeed);
-          } else {
-            const newSeed = generateRandomSeed();
-            setSeed(newSeed);
-      
-            if (typeof window !== "undefined") {
-              const url = new URL(window.location.href);
-              url.searchParams.set("seed", newSeed);
-              router.replace(url.toString());
-            }
-          }
-      
-          setInitialized(true);
-        }, [initialized, searchParams, router, setSeed]);
-      
-        return null;
-      }
-    
-    useEffect(() => {
-        if (typeof window !== "undefined" && seed) {
-            setShareLink(`${window.location.origin}${window.location.pathname}?seed=${seed}`);
-        }
-    }, [seed]);
-    
-    const normalizeString = (str: string) =>
-        str.toLowerCase().replace(/\(.*?\)/g, "").replace(/\s+/g, " ").trim()
+    if (isCorrect || updatedResults.length >= nrOfStages) {
+      audioRef.current.stopPlaying();
+      setGameState("result");
+    } else audioRef.current.nextStage();
+  };
 
-    const submitGuess = () => {
-        if (!audioRef.current) {
-            console.error("audio Ref");
-            return;
-        }
+  const skipGuess = () => {
+    if (!audioRef.current) return;
 
-        if (currentSong === "") {
-            setSongTitle(audioRef.current.getSong());
-            setSongArtist(audioRef.current.getArtist());
-        }
-
-        const encodedGuess = encodeURIComponent(currentGuess);
-
-        console.log(encodedGuess, currentSong)
-
-        const isCorrect =
-            encodedGuess === currentSong ||
-            encodedGuess.includes(currentSong);
-
-        const newResult: GuessResult = {
-            guess: currentGuess,
-            isCorrect: isCorrect,
-            isSkipped: false,
-        };
-
-        const updatedResults = [...guessResults, newResult];
-        setGuessResults(updatedResults);
-        setCurrentGuess("");
-
-        if (isCorrect || updatedResults.length >= nrOfStages) {
-            audioRef.current.stopPlaying();
-            setGameState("result");
-        } else audioRef.current.nextStage();
+    const newResult: GuessResult = {
+      guess: "",
+      isCorrect: false,
+      isSkipped: true,
     };
 
-    const skipGuess = () => {
-        if (!audioRef.current) {
-            console.error("audio Ref");
-            return;
-        }
+    const updatedResults = [...guessResults, newResult];
+    setGuessResults(updatedResults);
+    setCurrentGuess("");
 
-        const newResult: GuessResult = {
-            guess: "",
-            isCorrect: false,
-            isSkipped: true,
-        };
+    if (updatedResults.length >= nrOfStages) {
+      audioRef.current.stopPlaying();
+      setGameState("result");
+    } else audioRef.current.nextStage();
+  };
 
-        const updatedResults = [...guessResults, newResult];
-        setGuessResults(updatedResults);
-        setCurrentGuess("");
+  const resetGame = () => {
+    audioRef.current?.stopPlaying();
+    const newSeed = generateRandomSeed();
+    setSeed(newSeed);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("seed", newSeed);
+      router.replace(url.toString());
+    }
 
-        if (updatedResults.length >= nrOfStages) {
-            audioRef.current.stopPlaying();
-            setGameState("result");
-        } else audioRef.current.nextStage();
-    };
+    setGameState("start");
+    setCurrentGuess("");
+    setGuessResults([]);
+  };
 
-    const resetGame = () => {
-        audioRef.current?.stopPlaying();
-        console.log("RESET - audioRef.current:", audioRef.current);
-
-        const newSeed = generateRandomSeed();
-        setSeed(newSeed);
-        if (typeof window !== "undefined") {
-            const url = new URL(window.location.href);
-            url.searchParams.set("seed", newSeed);
-            router.replace(url.toString());
-        }
-
-        setGameState("start");
-        setCurrentGuess("");
-        setGuessResults([]);
-    };
-
-    const remainingGuesses = nrOfStages - guessResults.length;
-    const emptySlots = Array(remainingGuesses).fill(null);
+  const remainingGuesses = nrOfStages - guessResults.length;
+  const emptySlots = Array(remainingGuesses).fill(null);
 
     return (
         <div className="flex flex-col items-center justify-start min-h-screen w-full bg-gradient-to-br from-[#0f0f1a] to-[#1a1a2e] text-white px-6 py-10 transition-all duration-500 ease-in-out">
-            <Suspense fallback={null}>
-                <SeedLoader setSeed={setSeed} router={router}/>
-            </Suspense>
             <header className="w-full text-center mb-12">
                 <h1 className="text-6xl font-extrabold tracking-tight cursor-pointer select-none" onClick={resetGame}>
                     <span className="text-white">Song</span>
