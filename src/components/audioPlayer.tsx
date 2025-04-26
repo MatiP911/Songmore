@@ -23,10 +23,11 @@ export interface AudioPlayerHandle {
 interface AudioPlayerProps {
     onSongLoaded?: (title: string, artist: string) => void;
     genre: number | null; // Add the genre prop
+    seed: string | null;
 }
 
 
-const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(({ onSongLoaded, genre }, ref) => {
+const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(({ onSongLoaded, genre, seed }, ref) => {
     const [currentTime, setCurrentTime] = useState(0);
     const [currentSong, setSongTitle] = useState("");
     const [currentSongArtist, setSongArtist] = useState("");
@@ -47,12 +48,12 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(({ onSongLoa
 
     useEffect(() => {
         const getData = () => {
-            if (!genre) {
-                console.error("genre in null")
+            if (!genre || !seed) {
+                console.error("Missing genre or seed, skipping fetch")
                 return
             }
             const playlistID = genre;
-            fetch(`/api/random-song?playlistID=${playlistID}`)
+            fetch(`/api/random-song?playlistID=${playlistID}&seed=${seed}`)
                 .then((response) => {
                     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
@@ -88,7 +89,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(({ onSongLoa
             }
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [genre, seed]);
 
     useEffect(() => {
         if (!currentAudio) return;

@@ -8,12 +8,17 @@ import { AutoCompleteInput } from "./ui/autoCompleteInput";
 import { ArrowRight, Check, X } from "lucide-react";
 import { AudioPlayer, type AudioPlayerHandle } from "./audioPlayer.tsx";
 import GenreSelector from "./ui/genreSelector.tsx";
+import { useSearchParams, useRouter } from "next/navigation";
 
 type GuessResult = {
     guess: string;
     isCorrect: boolean;
     isSkipped: boolean;
 };
+
+export function generateRandomSeed() {
+    return Math.random().toString(36).substring(2, 10);
+}
 
 export default function SongGame() {
     const [gameState, setGameState] = useState<"start" | "playing" | "result">("start");
@@ -22,17 +27,47 @@ export default function SongGame() {
     const [currentSong, setSongTitle] = useState("");
     const [currentSongArtist, setSongArtist] = useState("");
     const [genre, setGenre] = useState<number | null>(null);
-
+    
     const audioRef = useRef<AudioPlayerHandle | null>(null);
-
+    
     const nrOfStages = 6; // TODO: ta stała występuje w dwóch miejscah (w audioPlayer.tsx)
-
+    
     const startGame = () => {
         setGameState("playing");
         setGuessResults([]);
         setCurrentGuess("");
     };
 
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const [seed, setSeed] = useState<string | null>(null);
+    const [shareLink, setShareLink] = useState<string | null>(null);
+    
+    useEffect(() => {
+        const existingSeed = searchParams.get("seed");
+    
+        if (existingSeed && seed === null) {
+            setSeed(existingSeed);
+        }
+    
+        if (!existingSeed && seed === null) {
+            const newSeed = generateRandomSeed();
+            setSeed(newSeed);
+    
+            if (typeof window !== "undefined") {
+                const url = new URL(window.location.href);
+                url.searchParams.set("seed", newSeed);
+                router.replace(url.toString());
+            }
+        }
+    }, [searchParams, router, seed]);
+    
+    useEffect(() => {
+        if (typeof window !== "undefined" && seed) {
+            setShareLink(`${window.location.origin}${window.location.pathname}?seed=${seed}`);
+        }
+    }, [seed]);
+    
     const normalizeString = (str: string) =>
         str.toLowerCase().replace(/\(.*?\)/g, "").replace(/\s+/g, " ").trim()
 
@@ -96,6 +131,15 @@ export default function SongGame() {
     const resetGame = () => {
         audioRef.current?.stopPlaying();
         console.log("RESET - audioRef.current:", audioRef.current);
+
+        const newSeed = generateRandomSeed();
+        setSeed(newSeed);
+        if (typeof window !== "undefined") {
+            const url = new URL(window.location.href);
+            url.searchParams.set("seed", newSeed);
+            router.replace(url.toString());
+        }
+
         setGameState("start");
         setCurrentGuess("");
         setGuessResults([]);
@@ -128,6 +172,15 @@ export default function SongGame() {
                             className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-6 text-lg">
                             Start Game
                         </Button>
+                        <div />
+                        {shareLink && (
+                        <div className="flex flex-col items-center mt-4 space-y-2">
+                            <p className="text-gray-400 text-sm">Share this link:</p>
+                            <div className="bg-gray-800 text-white rounded-lg px-4 py-2 break-all text-xs">
+                            {shareLink}
+                            </div>
+                        </div>
+                        )}
                         <p className="mt-12 text-sm italic text-gray-400 text-center max-w-2xl">
                             &quot;Every song is a memory. Let’s see how sharp yours is.&quot;
                         </p>
@@ -172,6 +225,7 @@ export default function SongGame() {
                         <AudioPlayer
                             ref={audioRef}
                             genre={genre}
+                            seed={seed}
                             onSongLoaded={(title, artist) => {
                                 setSongTitle(title);
                                 setSongArtist(artist);

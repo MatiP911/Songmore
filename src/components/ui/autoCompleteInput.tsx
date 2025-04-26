@@ -13,21 +13,42 @@ export function AutoCompleteInput({ value, onChange }: Props) {
   const [showSuggestions, setShowSuggestions] = useState(true);
   const suppressFetchRef = useRef(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
+const fetchSuggestions = async (query: string) => {
+    if (!query.trim()) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    if (suppressFetchRef.current) return;
 
-  const fetchSuggestions = async (query: string) => {
-    if (!query) return setSuggestions([]);
     try {
+      abortControllerRef.current?.abort();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
       const encodedQuery = encodeURIComponent(query);
-      const res = await fetch(`/api/search?q=${encodedQuery}`);
+      const res = await fetch(`/api/search?q=${encodedQuery}`, { signal: controller.signal });
+      if (!res.ok) throw new Error(`Error ${res.status}`);
+
       const data = await res.json();
-      setSuggestions(data.data?.slice(0, 10) || []);
-      setShowSuggestions(true);
+      if (!suppressFetchRef.current) {
+        setSuggestions(data.data?.slice(0, 10) || []);
+        setShowSuggestions(true);
+      }
     } catch (error) {
-      console.error("Error fetching suggestions:", error);
+      if (error instanceof Error) {
+        if (error.name !== "AbortError") {
+          console.error("Error fetching suggestions:", error.message);
+        }
+      } else {
+        console.error("Unknown error fetching suggestions:", error);
+      }
     }
   };
 
+  // Fetch suggestions when input value changes with debounce
   useEffect(() => {
     if (suppressFetchRef.current) {
       suppressFetchRef.current = false;
@@ -39,6 +60,7 @@ export function AutoCompleteInput({ value, onChange }: Props) {
     return () => clearTimeout(delayDebounce);
   }, [value]);
 
+  // Hide suggestions when user clicks outside of the input
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (

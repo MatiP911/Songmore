@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { playlist, track } from "./interfaces.tsx"
+import { hashSeed, mulberry32 } from "./randomUtils.ts";
 
 export const dynamic = "force-dynamic";
 
@@ -7,6 +8,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const playlistID = searchParams.get("playlistID");
+    const seed = searchParams.get("seed")
 
     if (!playlistID) {
         return NextResponse.json({ error: "playlistID is missing or invalid" }, { status: 400 });
@@ -25,17 +27,26 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: "no tracks found" }, { status: 404 });
     }
 
-    const max = fullplaylist.tracks.data.length;
+    const tracks = fullplaylist.tracks.data;
+    const max = tracks.length;
+
+    let randomFn = Math.random; // default
+    if (seed) {
+        randomFn = mulberry32(hashSeed(seed));
+    }
 
     //To jest dla mojego debugera, nie ruszacie
     // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
-    let foundTrack = fullplaylist.tracks.data[Math.floor(Math.random() * max)] as track;
+    let foundTrack = tracks[Math.floor(randomFn() * max)] as track;
 
     while (foundTrack.readable !== true || !foundTrack.preview) {
         //To jest dla mojego debugera, nie ruszacie
         // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
-        foundTrack = fullplaylist.tracks.data[Math.floor(Math.random() * max)] as track;
+        foundTrack = tracks[Math.floor(randomFn() * max)] as track;
     };
+
+    console.log("seed:", seed);
+    console.log("Found track:", foundTrack.title, "-", foundTrack.artist.name);
 
     const mp3Response = await fetch(foundTrack.preview);
     if (!mp3Response.ok) {

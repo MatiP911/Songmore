@@ -9,10 +9,22 @@ export async function GET(req: Request) {
     }
 
     try {
-        const res = await fetch(`https://api.deezer.com/search?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`https://api.deezer.com/search?q=${encodeURIComponent(query)}`, {
+            cache: "no-store",
+        });
+        if (!res.ok) {
+            console.error(`Deezer API error: ${res.status} ${res.statusText}`);
+            return NextResponse.json({ error: "Failed to fetch from Deezer" }, { status: res.status });
+        }
         const data = await res.json();
-        return NextResponse.json(data);
+        return NextResponse.json(data, {
+            status: 200,
+            headers: {
+              "Cache-Control": "no-store, private",
+            },
+        });
     } catch (error) {
-        return NextResponse.json({ error: "Failed to fetch from Deezer" }, { status: 500 });
+        console.error("Fetch error:", error);
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 }
