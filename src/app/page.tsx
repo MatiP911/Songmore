@@ -1,3 +1,5 @@
+"use client";
+
 import SongGame from "../components/song-game.tsx";
 import React from "react";
 
