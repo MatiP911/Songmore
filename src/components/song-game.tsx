@@ -132,19 +132,16 @@ export default function SongGame() {
   const emptySlots = Array(remainingGuesses).fill(null);
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen w-full bg-gradient-to-br from-[#0f0f1a] to-[#1a1a2e] text-white px-6 py-8 transition-all duration-500 ease-in-out">
-      <header className="w-full text-center mb-12">
-        <h1 className="text-6xl font-extrabold tracking-tight cursor-pointer select-none" onClick={resetGame}>
-          <span className="text-white">Song</span>
-          <span className="text-teal-400">more</span>
-        </h1>
-        <p className="hidden sm:block text-md text-gray-400 mt-3">Can you guess the song in 6 tries?</p>
-      </header>
+    <div className="flex flex-col items-center space-y-6 justify-start min-h-screen w-full bg-gradient-to-br from-[#0f0f1a] to-[#1a1a2e] text-white px-6 py-8 transition-all duration-500 ease-in-out">
+      <h1 className={`font-extrabold tracking-tight cursor-pointer select-none ${gameState === "playing" ? "text-2xl sm:text-6xl" : "text-6xl"}`} onClick={resetGame}>
+        <span className="text-white">Song</span>
+        <span className="text-teal-400">more</span>
+      </h1>
 
       <main className="w-full flex flex-col items-center gap-10 px-4 max-w-2xl mx-auto">
         {gameState === "start" && (
-          <div className="text-center space-y-8">
-            <h2 className="text-2xl font-medium">
+          <div className="text-center">
+            <h2 className="text-xl sm:text-2xl font-medium">
               Select <span className="text-teal-400">genre</span> and try to <span className="text-teal-400">guess the song</span> from listening to small parts of it
             </h2>
             <GenreSelector selected={genre} onSelect={setGenre} />
@@ -227,7 +224,7 @@ export default function SongGame() {
               }}
             />
 
-            <div className="w-full space-y-4">
+            <div className="w-full space-y-2">
               <AutoCompleteInput value={currentGuess} onChange={setCurrentGuess} />
               <div className="flex gap-4">
                 <Button onClick={skipGuess} variant="outline" className="min-h-[3.5rem] flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/20">

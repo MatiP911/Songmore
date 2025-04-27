@@ -8,6 +8,7 @@ import React, {
 
 import { Progress } from "./ui/progress.tsx";
 import { Button } from "./ui/button.tsx";
+import VolumeSlider from "./ui/volumeSlider.tsx";
 
 const nrOfStages = 6;
 
@@ -34,7 +35,7 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(({ onSongLoa
     const [currentStage, setCurrentStage] = useState(1);
     const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
     const stageDurations = [0.5, 2, 3, 5, 15, 30];
-    const [currentVolume, _setCurrentVolume] = useState(0.02);
+    const [currentVolume, setCurrentVolume] = useState(0.02);
     const [isPlaying, setIsPlaying] = useState(false);
 
     useImperativeHandle(ref, () => ({
@@ -146,6 +147,8 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(({ onSongLoa
                     <span>0:30</span>
                 </div>
             </div>
+
+            <VolumeSlider volume={currentVolume} onVolumeChange={setCurrentVolume} ></VolumeSlider>
 
             <div className="flex justify-center">
                 <Button

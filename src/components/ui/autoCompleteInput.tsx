@@ -15,7 +15,7 @@ export function AutoCompleteInput({ value, onChange }: Props) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-const fetchSuggestions = async (query: string) => {
+  const fetchSuggestions = async (query: string) => {
     if (!query.trim()) {
       setSuggestions([]);
       setShowSuggestions(false);
@@ -75,7 +75,7 @@ const fetchSuggestions = async (query: string) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-  
+
 
   return (
     <div className="w-full relative" ref={wrapperRef}>

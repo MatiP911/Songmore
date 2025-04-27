@@ -34,7 +34,7 @@
 - [x] Dodać SEED do funkcji losowania piosenek, żeby móc grać też z kimś równolegle (np w formie linku)
    - [] Dodać -coś- żeby po wysłaniu linku wybrany byl odpowiedni gatunek (nowy parametr? zakodować w seedzie?)
 - [] Dodać tryb(?) z rundami i podsumowaniem jak poszło
-- [] Dodać slider głośności
+- [x] Dodać slider głośności
 
 - Naprawiać bugi (raczej tutaj już zakładka issue w github)
 
