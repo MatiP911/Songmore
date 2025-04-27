@@ -2,7 +2,6 @@
 import { Flame, Music, Guitar, PianoIcon, HandMetal, GuitarIcon, Disc3, Settings, MicVocal, Flag, Venus, Clapperboard, Gamepad2 } from "lucide-react"
 import SettingsDialog from "./customSettings"
 import { useState } from "react"
-import { custom } from "zod"
 
 type GenreSelectorProps = {
   selected: number | null
