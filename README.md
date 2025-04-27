@@ -31,7 +31,8 @@
    - [x] Możliwość wyboru customowej playlisty
    - [] Dodać opcje pobierania piosenek z wielu playlist
    - [] Osobny plik z danymi na gatunki i playlisty
-- [] Dodać SEED do funkcji losowania piosenek, żeby móc grać też z kimś równolegle (np w formie linku)
+- [x] Dodać SEED do funkcji losowania piosenek, żeby móc grać też z kimś równolegle (np w formie linku)
+   - [] Dodać -coś- żeby po wysłaniu linku wybrany byl odpowiedni gatunek (nowy parametr? zakodować w seedzie?)
 - [] Dodać tryb(?) z rundami i podsumowaniem jak poszło
 - [] Dodać slider głośności
 

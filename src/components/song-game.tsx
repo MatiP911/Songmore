@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "./ui/button.tsx";
 import { AutoCompleteInput } from "./ui/autoCompleteInput";
-import { ArrowRight, Check, X } from "lucide-react";
+import { ArrowRight, Check, X, Copy } from "lucide-react";
 import { AudioPlayer, type AudioPlayerHandle } from "./audioPlayer.tsx";
 import GenreSelector from "./ui/genreSelector.tsx";
 import SettingsDialog from "./ui/customSettings.tsx";
@@ -28,6 +28,7 @@ export default function SongGame() {
   const [genre, setGenre] = useState<number | null>(null);
   const [seed, setSeed] = useState<string | null>(null);
   const [shareLink, setShareLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const audioRef = useRef<AudioPlayerHandle | null>(null);
   const router = useRouter();
@@ -131,7 +132,7 @@ export default function SongGame() {
   const emptySlots = Array(remainingGuesses).fill(null);
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen w-full bg-gradient-to-br from-[#0f0f1a] to-[#1a1a2e] text-white px-6 py-10 transition-all duration-500 ease-in-out">
+    <div className="flex flex-col items-center justify-start min-h-screen w-full bg-gradient-to-br from-[#0f0f1a] to-[#1a1a2e] text-white px-6 py-8 transition-all duration-500 ease-in-out">
       <header className="w-full text-center mb-12">
         <h1 className="text-6xl font-extrabold tracking-tight cursor-pointer select-none" onClick={resetGame}>
           <span className="text-white">Song</span>
@@ -147,22 +148,34 @@ export default function SongGame() {
               Select <span className="text-teal-400">genre</span> and try to <span className="text-teal-400">guess the song</span> from listening to small parts of it
             </h2>
             <GenreSelector selected={genre} onSelect={setGenre} />
-            <div className="h-2" />
             <Button
               disabled={!genre}
               onClick={startGame}
               className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-6 text-lg">
               Start Game
             </Button>
-            <div />
             {shareLink && (
               <div className="flex flex-col items-center mt-4 space-y-2">
                 <p className="text-gray-400 text-sm">Share this link:</p>
-                <div className="bg-gray-800 text-white rounded-lg px-4 py-2 break-all text-xs">
-                  {shareLink}
+                <div className="flex items-center gap-2">
+                  <div className="bg-gray-800 text-white rounded-lg px-4 py-2 break-all text-xs">
+                    {shareLink}
+                  </div>
+                  <Button
+                    size="icon"
+                    onClick={() => {
+                      navigator.clipboard.writeText(shareLink);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                    className="bg-gray-800 rounded-lg hover:bg-white/10 text-white"
+                  >
+                    {copied ? <Check size={12} /> : <Copy size={12} />}
+                  </Button>
                 </div>
               </div>
             )}
+
             <p className="mt-12 text-sm italic text-gray-400 text-center max-w-2xl">
               &quot;Every song is a memory. Let’s see how sharp yours is.&quot;
             </p>
