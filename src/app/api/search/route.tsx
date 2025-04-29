@@ -3,13 +3,21 @@ import { NextResponse } from "next/server";
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const query = searchParams.get("q");
+    const type = searchParams.get('type')
 
     if (!query) {
         return NextResponse.json({ data: [] }, { status: 400 });
     }
 
     try {
-        const res = await fetch(`https://api.deezer.com/search?q=${encodeURIComponent(query)}`, {
+        let apiUrl;
+        if (type === 'playlist') {
+            apiUrl = `https://api.deezer.com/search/playlist?q=${encodeURIComponent(query)}`;
+        } else {
+            // Default song search
+            apiUrl = `https://api.deezer.com/search?q=${encodeURIComponent(query)}`;
+        }
+        const res = await fetch(apiUrl, {
             cache: "no-store",
         });
         if (!res.ok) {
@@ -20,7 +28,7 @@ export async function GET(req: Request) {
         return NextResponse.json(data, {
             status: 200,
             headers: {
-              "Cache-Control": "no-store, private",
+                "Cache-Control": "no-store, private",
             },
         });
     } catch (error) {
