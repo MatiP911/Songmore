@@ -1,15 +1,25 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Input } from "./input.tsx";
 import { Search } from "lucide-react";
-import type { track } from "../../app/api/random-song/interfaces.tsx";
+import type { playlist, track } from "../../app/api/random-song/interfaces.tsx";
+
 
 type Props = {
   value: string;
+  searchType?: 'track' | 'playlist';
+  defaultText?: string;
   onChange: (val: string) => void;
 };
 
-export function AutoCompleteInput({ value, onChange }: Props) {
-  const [suggestions, setSuggestions] = useState<track[]>([]);
+const truncateText = (text: string, maxLength: number) => {
+  if (text.length <= maxLength) {
+    return text;
+  }
+  return text.substring(0, maxLength) + '...';
+};
+
+export function AutoCompleteInput({ value, searchType = "track", defaultText = "", onChange }: Props) {
+  const [suggestions, setSuggestions] = useState<track[] | playlist[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const suppressFetchRef = useRef(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -29,7 +39,7 @@ export function AutoCompleteInput({ value, onChange }: Props) {
       abortControllerRef.current = controller;
 
       const encodedQuery = encodeURIComponent(query);
-      const res = await fetch(`/api/search?q=${encodedQuery}`, { signal: controller.signal });
+      const res = await fetch('/api/search?q=' + encodedQuery + '&type=' + searchType, { signal: controller.signal });
       if (!res.ok) throw new Error(`Error ${res.status}`);
 
       const data = await res.json();
@@ -87,11 +97,11 @@ export function AutoCompleteInput({ value, onChange }: Props) {
               className="px-4 py-2 hover:bg-teal-600 cursor-pointer"
               onClick={() => {
                 suppressFetchRef.current = true;
-                onChange(`${s.title} - ${s.artist.name}`);
+                onChange(`${'artist' in s ? s.title + " - " + s.artist.name : s.id}`);
                 setShowSuggestions(false);
               }}
             >
-              {s.title} – {s.artist.name}
+              {truncateText(s.title, 50)} {`${'artist' in s ? (" - " + s.artist.name) : `(${s.nb_tracks} tracks)`}`}
             </div>
           ))}
         </div>
@@ -101,7 +111,7 @@ export function AutoCompleteInput({ value, onChange }: Props) {
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
         <Input
           type="text"
-          placeholder="Know it? Search for the title"
+          placeholder={defaultText}
           value={value}
           onChange={(e) => {
             onChange(e.target.value);

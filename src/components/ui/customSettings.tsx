@@ -11,7 +11,7 @@ import {
     DialogFooter,
 } from "~/components/ui/dialog"
 import { Save } from "lucide-react"
-import { Input } from "./input.tsx";
+import { AutoCompleteInput } from "./autoCompleteInput.tsx"
 
 interface customSettingsProps {
     isOpen: boolean
@@ -42,12 +42,11 @@ export default function SettingsDialog({
                         </DialogDescription>
                     </DialogHeader>
                     {"Set the custom playlist for your game"}
-                    <Input
-                        type="string"
-                        placeholder="Input the playlist ID"
+                    <AutoCompleteInput
                         value={playlistID}
-                        onChange={(e) => setPlaylistID(e.target.value)}
-                        className="min-h-[3.5rem] bg-gray-900/20 border-gray-700 text-white rounded-md"
+                        onChange={setPlaylistID}
+                        defaultText="Search for your favourite playlist"
+                        searchType="playlist"
                     />
 
                     <DialogFooter>

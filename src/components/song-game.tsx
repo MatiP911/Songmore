@@ -225,7 +225,7 @@ export default function SongGame() {
             />
 
             <div className="w-full space-y-2">
-              <AutoCompleteInput value={currentGuess} onChange={setCurrentGuess} />
+              <AutoCompleteInput value={currentGuess} onChange={setCurrentGuess} defaultText="Know it? Search for the title" />
               <div className="flex gap-4">
                 <Button onClick={skipGuess} variant="outline" className="min-h-[3.5rem] flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/20">
                   SKIP
