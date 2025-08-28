@@ -3,7 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "./ui/button.tsx";
 import { AutoCompleteInput } from "./ui/autoCompleteInput";
-import { ArrowRight, Check, X, Copy } from "lucide-react";
+import { ArrowRight, Check, X, Copy, Settings } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog.tsx";
 import { AudioPlayer, type AudioPlayerHandle } from "./audioPlayer.tsx";
 import GenreSelector from "./ui/genreSelector.tsx";
 import SettingsDialog from "./ui/customSettings.tsx";
@@ -30,6 +37,15 @@ export default function SongGame() {
   const [shareLink, setShareLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [customPlaylistIDs, setCustomPlaylistIDs] = useState<number[]>([]);
+  const [guessRule, setGuessRule] = useState<"title" | "artist" | "both">(() => {
+    if (typeof window === "undefined") return "both";
+    try {
+      const raw = window.localStorage.getItem("songmore.guessRule");
+      if (raw === "title" || raw === "artist" || raw === "both") return raw;
+    } catch { /* ignore */ }
+    return "both";
+  });
+  const [gameSettingsOpen, setGameSettingsOpen] = useState(false);
 
   const audioRef = useRef<AudioPlayerHandle | null>(null);
   const router = useRouter();
@@ -59,6 +75,10 @@ export default function SongGame() {
     }
   }, [seed]);
 
+  useEffect(() => {
+    try { window.localStorage.setItem("songmore.guessRule", guessRule); } catch { /* ignore */ }
+  }, [guessRule]);
+
   const normalizeString = (str: string) =>
     str.toLowerCase().replace(/\(.*?\)/g, "").replace(/\s+/g, " ").trim();
 
@@ -76,8 +96,20 @@ export default function SongGame() {
       setSongArtist(audioRef.current.getArtist());
     }
 
-    const encodedGuess = encodeURIComponent(currentGuess);
-    const isCorrect = encodedGuess === currentSong || encodedGuess.includes(currentSong);
+    const normalizedGuess = normalizeString(currentGuess);
+    const normalizedTitle = normalizeString(decodeURIComponent(currentSong));
+    const normalizedArtist = normalizeString(decodeURIComponent(currentSongArtist));
+
+    let isCorrect = false;
+    if (guessRule === "title") {
+      isCorrect = normalizedGuess === normalizedTitle || normalizedGuess.includes(normalizedTitle);
+    } else if (guessRule === "artist") {
+      isCorrect = normalizedGuess === normalizedArtist || normalizedGuess.includes(normalizedArtist);
+    } else {
+      const titleOk = normalizedGuess.includes(normalizedTitle) || normalizedTitle.includes(normalizedGuess);
+      const artistOk = normalizedGuess.includes(normalizedArtist) || normalizedArtist.includes(normalizedGuess);
+      isCorrect = titleOk && artistOk;
+    }
 
     const newResult: GuessResult = {
       guess: currentGuess,
@@ -145,15 +177,28 @@ export default function SongGame() {
             <h2 className="text-xl sm:text-2xl font-medium">
               Select <span className="text-teal-400">genre</span> and try to <span className="text-teal-400">guess the song</span> from listening to small parts of it
             </h2>
-            <GenreSelector selected={genre} onSelect={setGenre} onCustomPlaylistsSave={(ids) => {
+            <GenreSelector selected={genre} onSelect={(g) => {
+              setGenre(g);
+              if (g !== 0) setCustomPlaylistIDs([]);
+            }} onCustomPlaylistsSave={(ids) => {
               setCustomPlaylistIDs(ids);
             }} />
-            <Button
-              disabled={!genre && customPlaylistIDs.length === 0}
-              onClick={startGame}
-              className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-6 text-lg">
-              Start Game
-            </Button>
+            <div className="mt-4 flex items-center justify-center gap-3">
+              <Button
+                disabled={!genre && customPlaylistIDs.length === 0}
+                onClick={startGame}
+                className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-6 text-lg">
+                Start Game
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setGameSettingsOpen(true)}
+                className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-4 py-6"
+                title="Game settings"
+              >
+                <Settings size={20} />
+              </Button>
+            </div>
             {shareLink && (
               <div className="flex flex-col items-center mt-4 space-y-2">
                 <p className="text-gray-400 text-sm">Share this link:</p>
@@ -264,6 +309,36 @@ export default function SongGame() {
 
 
       </main>
+
+      <Dialog open={gameSettingsOpen} onOpenChange={setGameSettingsOpen}>
+        <DialogContent className="sm:max-w-[600px] ">
+          <DialogHeader>
+            <DialogTitle>Game settings</DialogTitle>
+            <DialogDescription>Select what counts as a correct guess.</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div>
+              <div className="text-sm text-gray-300 mb-2">What counts as correct?</div>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { key: "title", label: "Title" },
+                  { key: "artist", label: "Artist" },
+                  { key: "both", label: "Title + Artist" },
+                ] as { key: "title" | "artist" | "both"; label: string }[]).map(opt => (
+                  <button
+                    key={opt.key}
+                    className={`px-3 py-2 rounded-md border text-sm ${guessRule === opt.key ? 'bg-teal-600 border-transparent' : 'bg-white/10 border-white/20 hover:bg-white/15'}`}
+                    onClick={() => setGuessRule(opt.key)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
