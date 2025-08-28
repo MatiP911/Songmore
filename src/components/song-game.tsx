@@ -176,7 +176,7 @@ export default function SongGame() {
               </div>
             )}
 
-            <p className="mt-12 text-sm italic text-gray-400 text-center max-w-2xl">
+            <p className="mt-5 text-sm italic text-gray-400 text-center max-w-2xl">
               &quot;Every song is a memory. Let’s see how sharp yours is.&quot;
             </p>
           </div>

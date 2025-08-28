@@ -26,20 +26,26 @@ export default function SettingsDialog({
     onSave,
 }: customSettingsProps) {
     const [playlistID, setPlaylistID] = useState('')
-    const [selectedPlaylists, setSelectedPlaylists] = useState<{ id: number; title: string }[]>([])
+    const [selectedPlaylists, setSelectedPlaylists] = useState<{ id: number; title: string; nb_tracks?: number }[]>([])
+    const [poolSize, setPoolSize] = useState(0)
 
     useEffect(() => {
         if (!isOpen) return
         try {
             const raw = window.localStorage.getItem("songmore.selectedPlaylists")
             if (raw) {
-                const parsed = JSON.parse(raw) as { id: number; title: string }[]
+                const parsed = JSON.parse(raw) as { id: number; title: string; nb_tracks?: number }[]
                 if (Array.isArray(parsed)) setSelectedPlaylists(parsed)
             }
         } catch {
             // ignore
         }
     }, [isOpen])
+
+    useEffect(() => {
+        const size = selectedPlaylists.reduce((sum, p) => sum + (p.nb_tracks ?? 0), 0)
+        setPoolSize(size)
+    }, [selectedPlaylists])
 
     const handleSaveClick = () => {
         try {
@@ -54,8 +60,9 @@ export default function SettingsDialog({
     const handleSelect = (item: playlist) => {
         const id = item.id
         const title = item.title
+        const nb_tracks = item.nb_tracks
         if (selectedPlaylists.some(p => p.id === id)) return
-        setSelectedPlaylists(prev => [...prev, { id, title }])
+        setSelectedPlaylists(prev => [...prev, { id, title, nb_tracks }])
         setPlaylistID('')
     }
 
@@ -75,19 +82,24 @@ export default function SettingsDialog({
                     </DialogHeader>
                     
                     {selectedPlaylists.length > 0 ? (
-                        <div className="py-2 flex flex-wrap gap-2">
-                            {selectedPlaylists.map((p) => (
-                                <div
-                                    key={p.id}
-                                    className="px-3 py-1 rounded-full bg-white/10 border border-white/20 cursor-pointer text-sm"
-                                    onClick={() => handleRemove(p.id)}
-                                    title="Remove"
-                                >
-                                    {p.title}
-                                </div>
-                            ))}
+                        <div className="py-2 flex flex-wrap items-center gap-2">
+                            <div className="flex flex-wrap gap-2">
+                                {selectedPlaylists.map((p) => (
+                                    <div
+                                        key={p.id}
+                                        className="px-3 py-1 rounded-full bg-white/10 border border-white/20 cursor-pointer text-sm"
+                                        onClick={() => handleRemove(p.id)}
+                                        title="Remove"
+                                    >
+                                        {p.title}
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mr-auto text-sm text-gray-400 whitespace-nowrap">
+                                {poolSize} {poolSize === 1 ? 'song' : 'songs'}
+                            </div>
                         </div>
-                    ) : (<p className="py-2">Set the custom playlists for your game</p>)}
+                    ) : (<p className="py-2">Search for playlists for your ideal game</p>)}
                     <AutoCompleteInput
                         value={playlistID}
                         onChange={setPlaylistID}
