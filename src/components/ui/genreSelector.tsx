@@ -6,6 +6,7 @@ import { useState } from "react"
 type GenreSelectorProps = {
   selected: number | null
   onSelect: (genre: number) => void
+  onCustomPlaylistsSave?: (ids: number[]) => void
 }
 
 const genres = [
@@ -23,19 +24,15 @@ const genres = [
   { name: "Custom", icon: <Settings className="w-10 h-10 mb-2" />, id: 0, enabled: true },
 ]
 
-export default function GenreSelector({ selected, onSelect }: GenreSelectorProps) {
+export default function GenreSelector({ selected, onSelect, onCustomPlaylistsSave }: GenreSelectorProps) {
   const [settingsOpen, settingsSetOpen] = useState(false)
 
   const handleClose = () => {
     settingsSetOpen(false)
   }
-  const handleSave = (playlistId: string) => {
-    console.log("Saved custom playlist ID:", playlistId);
-    onSelect(parseInt(playlistId))
-    const customGenreId = genres.findIndex(genre => genre.name === "Custom");
-    if (customGenreId !== -1) {
-      genres[customGenreId]!.id = parseInt(playlistId);
-    }
+  const handleSave = (playlistIds: number[]) => {
+    onCustomPlaylistsSave?.(playlistIds)
+    onSelect(0)
   }
 
   return (

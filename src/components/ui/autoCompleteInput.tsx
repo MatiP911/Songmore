@@ -9,6 +9,7 @@ type Props = {
   searchType?: 'track' | 'playlist';
   defaultText?: string;
   onChange: (val: string) => void;
+  onSelect?: (item: track | playlist) => void;
 };
 
 const truncateText = (text: string, maxLength: number) => {
@@ -18,7 +19,7 @@ const truncateText = (text: string, maxLength: number) => {
   return text.substring(0, maxLength) + '...';
 };
 
-export function AutoCompleteInput({ value, searchType = "track", defaultText = "", onChange }: Props) {
+export function AutoCompleteInput({ value, searchType = "track", defaultText = "", onChange, onSelect }: Props) {
   const [suggestions, setSuggestions] = useState<track[] | playlist[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const suppressFetchRef = useRef(false);
@@ -98,6 +99,7 @@ export function AutoCompleteInput({ value, searchType = "track", defaultText = "
               onClick={() => {
                 suppressFetchRef.current = true;
                 onChange(`${'artist' in s ? s.title + " - " + s.artist.name : s.id}`);
+                onSelect?.(s);
                 setShowSuggestions(false);
               }}
             >

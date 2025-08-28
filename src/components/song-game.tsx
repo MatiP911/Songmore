@@ -29,6 +29,7 @@ export default function SongGame() {
   const [seed, setSeed] = useState<string | null>(null);
   const [shareLink, setShareLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [customPlaylistIDs, setCustomPlaylistIDs] = useState<number[]>([]);
 
   const audioRef = useRef<AudioPlayerHandle | null>(null);
   const router = useRouter();
@@ -144,9 +145,11 @@ export default function SongGame() {
             <h2 className="text-xl sm:text-2xl font-medium">
               Select <span className="text-teal-400">genre</span> and try to <span className="text-teal-400">guess the song</span> from listening to small parts of it
             </h2>
-            <GenreSelector selected={genre} onSelect={setGenre} />
+            <GenreSelector selected={genre} onSelect={setGenre} onCustomPlaylistsSave={(ids) => {
+              setCustomPlaylistIDs(ids);
+            }} />
             <Button
-              disabled={!genre}
+              disabled={!genre && customPlaylistIDs.length === 0}
               onClick={startGame}
               className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-6 text-lg">
               Start Game
@@ -218,6 +221,7 @@ export default function SongGame() {
               ref={audioRef}
               genre={genre}
               seed={seed}
+              playlistIDs={customPlaylistIDs.length ? customPlaylistIDs : undefined}
               onSongLoaded={(title, artist) => {
                 setSongTitle(title);
                 setSongArtist(artist);
