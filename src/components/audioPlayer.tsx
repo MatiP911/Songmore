@@ -2,12 +2,13 @@ import React, {
     forwardRef,
     useEffect,
     useImperativeHandle,
-    useRef,
     useState,
 } from "react";
 
 import { Progress } from "./ui/progress.tsx";
 import { Button } from "./ui/button.tsx";
+import VolumeSlider from "./ui/volumeSlider.tsx";
+import { hashSeed, mulberry32 } from "../app/api/random-song/randomUtils.ts";
 
 const nrOfStages = 6;
 
@@ -24,17 +25,18 @@ interface AudioPlayerProps {
     onSongLoaded?: (title: string, artist: string) => void;
     genre: number | null; // Add the genre prop
     seed: string | null;
+    playlistIDs?: number[];
 }
 
 
-const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(({ onSongLoaded, genre, seed }, ref) => {
+const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(({ onSongLoaded, genre, seed, playlistIDs }, ref) => {
     const [currentTime, setCurrentTime] = useState(0);
     const [currentSong, setSongTitle] = useState("");
     const [currentSongArtist, setSongArtist] = useState("");
     const [currentStage, setCurrentStage] = useState(1);
     const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
     const stageDurations = [0.5, 2, 3, 5, 15, 30];
-    const [currentVolume, _setCurrentVolume] = useState(0.02);
+    const [currentVolume, setCurrentVolume] = useState(0.02);
     const [isPlaying, setIsPlaying] = useState(false);
 
     useImperativeHandle(ref, () => ({
@@ -48,12 +50,25 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(({ onSongLoa
 
     useEffect(() => {
         const getData = () => {
-            if (!genre || !seed) {
-                console.error("Missing genre or seed, skipping fetch")
+            if (((genre === null || genre === undefined) && (!playlistIDs || playlistIDs.length === 0)) || !seed) {
+                console.error("Missing genre or playlistIDs or seed, skipping fetch")
                 return
             }
-            const playlistID = genre;
-            fetch(`/api/random-song?playlistID=${playlistID}&seed=${seed}`)
+            let chosen = genre ?? undefined;
+            if (playlistIDs && playlistIDs.length > 0) {
+                // choose deterministically based on seed
+                let randomFn = Math.random;
+                try {
+                    randomFn = mulberry32(hashSeed(seed));
+                } catch { /* ignore */ }
+                chosen = playlistIDs[Math.floor(randomFn() * playlistIDs.length)];
+            }
+            if (chosen === undefined || chosen === null) {
+                console.error("No playlist chosen")
+                return
+            }
+            console.log("chosen", chosen)
+            fetch(`/api/random-song?playlistID=${chosen}&seed=${seed}`)
                 .then((response) => {
                     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
@@ -146,6 +161,8 @@ const AudioPlayer = forwardRef<AudioPlayerHandle, AudioPlayerProps>(({ onSongLoa
                     <span>0:30</span>
                 </div>
             </div>
+
+            <VolumeSlider volume={currentVolume} onVolumeChange={setCurrentVolume} ></VolumeSlider>
 
             <div className="flex justify-center">
                 <Button
